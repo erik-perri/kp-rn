@@ -66,9 +66,7 @@ export class Database {
 
   setKey(key: CompositeKey | null, transformKey: boolean = true) {
     if (!key) {
-      // m_data.key.reset();
-      // m_data.transformedDatabaseKey.reset(new PasswordKey());
-      return true;
+      throw new Error('reset not implemented');
     }
 
     let oldTransformedDatabaseKey = new PasswordKey();
