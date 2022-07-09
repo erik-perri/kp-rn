@@ -1,9 +1,14 @@
-import {getHmacKey, UINT64_MAX} from '../../../src/lib/streams/HmacBlockStream';
+import HmacBlockStream, {
+  UINT64_MAX,
+} from '../../../src/lib/streams/HmacBlockStream';
 import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 
 describe('HmacBlockStream', () => {
   it('', () => {
-    const result = getHmacKey(UINT64_MAX, sampleAes256AesKdfKdbx4.hmacKey);
+    const result = HmacBlockStream.getHmacKey(
+      UINT64_MAX,
+      sampleAes256AesKdfKdbx4.hmacKey,
+    );
 
     expect(result).toEqualUint8Array(
       new Uint8Array([

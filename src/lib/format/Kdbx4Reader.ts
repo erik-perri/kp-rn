@@ -252,7 +252,7 @@ export default class Kdbx4Reader extends KdbxReader {
         headerHmac,
         CryptoHash.hmac(
           headerData,
-          getHmacKey(UINT64_MAX, hmacKey),
+          HmacBlockStream.getHmacKey(UINT64_MAX, hmacKey),
           CryptoHashAlgorithm.Sha256,
         ),
       )
