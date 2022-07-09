@@ -2,11 +2,6 @@ import * as fs from 'fs';
 import Kdbx4Reader from '../../../src/lib/format/Kdbx4Reader';
 import PasswordKey from '../../../src/lib/keys/PasswordKey';
 import CompositeKey from '../../../src/lib/keys/CompositeKey';
-import {
-  FILE_VERSION_4,
-  FILE_VERSION_CRITICAL_MASK,
-} from '../../../src/lib/format/Keepass2';
-import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 
 describe('Kbd4Reader', () => {
   it('can read a database', async () => {
@@ -20,20 +15,7 @@ describe('Kbd4Reader', () => {
       new CompositeKey([new PasswordKey('sample')]),
     );
 
-    // @ts-ignore
-    expect(reader.getEncryptionIV()).toEqualUint8Array(
-      sampleAes256AesKdfKdbx4.encryptionIV,
-    );
-
-    expect(database.getTransformedDatabaseKey()).toEqualUint8Array(
-      sampleAes256AesKdfKdbx4.transformedDatabaseKey,
-    );
-
-    // eslint-disable-next-line no-bitwise
-    expect(database.getFormatVersion() & FILE_VERSION_CRITICAL_MASK).toEqual(
-      FILE_VERSION_4,
-    );
-
-    // expect(database.getName()).toEqual('Sample');
+    expect(database.metadata.generator).toEqual('KeePassXC');
+    expect(database.metadata.databaseName).toEqual('Sample');
   });
 });

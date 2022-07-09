@@ -12,6 +12,7 @@
     "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
+    "fast-xml-parser": "^4.0.8",
     "react": "18.0.0",
     "react-native": "0.69.1",
     "uuid": "^8.3.2"

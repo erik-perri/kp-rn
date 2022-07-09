@@ -22,9 +22,10 @@ import {
 import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
 import * as crypto from 'crypto';
 import {gunzip} from '../utilities/zlib';
+import KdbxXmlReader from './KdbxXmlReader';
 
 export default class Kdbx4Reader extends KdbxReader {
-  private binaryPool: Uint8Array[] = [];
+  private binaryPool: Record<string, Uint8Array> = {};
 
   protected readHeaderField(reader: BufferReader, database: Database): boolean {
     const fieldId = reader.readInt8();
@@ -210,7 +211,7 @@ export default class Kdbx4Reader extends KdbxReader {
     key: CompositeKey,
     database: Database,
   ): Promise<Database> {
-    this.binaryPool.length = 0;
+    this.binaryPool = {};
 
     if (
       // eslint-disable-next-line no-bitwise
@@ -299,8 +300,12 @@ export default class Kdbx4Reader extends KdbxReader {
       //
     }
 
+    // TODO Initialize random stream with getSymmetricCipherMode
+
+    const xmlReader = new KdbxXmlReader(FILE_VERSION_4, this.binaryPool);
     const remaining = bufferReader.subarray();
-    console.log(String.fromCharCode(...remaining));
+
+    await xmlReader.readDatabase(remaining, database);
 
     return database;
   }
@@ -333,7 +338,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
     switch (fieldId) {
       case InnerHeaderFieldId.InnerRandomStreamID:
-        this.setInnerRandomStreamID(fieldData);
+        this.setSymmetricCipherModeFromInnerRandomStreamId(fieldData);
         break;
 
       case InnerHeaderFieldId.InnerRandomStreamKey:
@@ -344,7 +349,8 @@ export default class Kdbx4Reader extends KdbxReader {
         if (fieldLen < 1) {
           throw new Error('Invalid inner header binary size');
         }
-        this.binaryPool.push(fieldData.subarray(1));
+        this.binaryPool[`${Object.keys(this.binaryPool).length}`] =
+          fieldData.subarray(1);
         break;
       }
     }

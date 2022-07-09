@@ -9,7 +9,7 @@ export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;
   private encryptionIV?: Uint8Array;
   private signature?: [number, number];
-  private irsAlgo?: ProtectedStreamAlgo;
+  private symmetricCipherMode?: SymmetricCipherMode;
   private streamKey?: Uint8Array;
 
   async readDatabase(buffer: Buffer, key: CompositeKey): Promise<Database> {
@@ -121,7 +121,7 @@ export default abstract class KdbxReader {
     return this.signature;
   }
 
-  protected setInnerRandomStreamID(data: Uint8Array) {
+  protected setSymmetricCipherModeFromInnerRandomStreamId(data: Uint8Array) {
     if (data.byteLength !== 4) {
       throw new Error('Invalid random stream id size');
     }
@@ -137,14 +137,24 @@ export default abstract class KdbxReader {
       throw new Error('Invalid inner random stream cipher');
     }
 
-    this.irsAlgo = id;
+    switch (id) {
+      case ProtectedStreamAlgo.Salsa20:
+        this.symmetricCipherMode = SymmetricCipherMode.Salsa20;
+        break;
+      case ProtectedStreamAlgo.ChaCha20:
+        this.symmetricCipherMode = SymmetricCipherMode.ChaCha20;
+        break;
+      default:
+        this.symmetricCipherMode = SymmetricCipherMode.InvalidMode;
+        break;
+    }
   }
 
-  protected getInnerRandomStreamID(): ProtectedStreamAlgo {
-    if (this.irsAlgo === undefined) {
+  protected getSymmetricCipherMode(): SymmetricCipherMode {
+    if (this.symmetricCipherMode === undefined) {
       throw new Error('Inner random stream algorithm not set');
     }
-    return this.irsAlgo;
+    return this.symmetricCipherMode;
   }
 
   protected setProtectedStreamKey(data: Uint8Array) {

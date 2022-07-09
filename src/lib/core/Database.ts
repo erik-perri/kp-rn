@@ -3,6 +3,7 @@ import DatabaseData from './DatabaseData';
 import PasswordKey from '../keys/PasswordKey';
 import CompositeKey from '../keys/CompositeKey';
 import {VariantFieldMap} from '../format/Keepass2';
+import Metadata from './Metadata';
 
 export enum CompressionAlgorithm {
   CompressionNone = 0,
@@ -17,12 +18,14 @@ export function toCompressionAlgorithm(id: number): id is CompressionAlgorithm {
 }
 
 export class Database {
-  private cipher: string | undefined;
+  public metadata: Metadata;
+  private cipher?: string;
   private data: DatabaseData;
-  private formatVersion: number | undefined;
+  private formatVersion?: number;
 
   constructor(key: CompositeKey) {
     this.data = new DatabaseData(key);
+    this.metadata = new Metadata('', '');
   }
 
   setCipher(uuid: string) {
