@@ -9,7 +9,7 @@ import {
 import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 
 describe('Kbd4Reader', () => {
-  it('can open a database', async () => {
+  it('can read a database', async () => {
     const file = fs.readFileSync(
       '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
     );
@@ -18,6 +18,11 @@ describe('Kbd4Reader', () => {
     const database = reader.readDatabase(
       file,
       new CompositeKey([new PasswordKey('sample')]),
+    );
+
+    // @ts-ignore
+    expect(reader.getEncryptionIV()).toEqualUint8Array(
+      sampleAes256AesKdfKdbx4.encryptionIV,
     );
 
     expect(database.getTransformedDatabaseKey()).toEqualUint8Array(

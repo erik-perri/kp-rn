@@ -7,15 +7,13 @@ import HmacBlockStream, {
 } from '../../../src/lib/streams/HmacBlockStream';
 
 describe('CryptoHash', () => {
-  describe('hmac', () => {
-    it('hashes as expected', () => {
-      const result = CryptoHash.hmac(
-        sampleAes256AesKdfKdbx4.headerData,
-        HmacBlockStream.getHmacKey(UINT64_MAX, sampleAes256AesKdfKdbx4.hmacKey),
-        CryptoHashAlgorithm.Sha256,
-      );
+  it('hmac hashes as expected', () => {
+    const result = CryptoHash.hmac(
+      sampleAes256AesKdfKdbx4.headerData,
+      HmacBlockStream.getHmacKey(UINT64_MAX, sampleAes256AesKdfKdbx4.hmacKey),
+      CryptoHashAlgorithm.Sha256,
+    );
 
-      expect(result).toEqualUint8Array(sampleAes256AesKdfKdbx4.headerHmacHash);
-    });
+    expect(result).toEqualUint8Array(sampleAes256AesKdfKdbx4.headerHmacHash);
   });
 });

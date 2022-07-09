@@ -9,7 +9,7 @@ const kdfSeed = new Uint8Array([
 const kdfRounds = BigInt(1);
 
 describe('AesKdf', () => {
-  it('works as expected', () => {
+  it('transforms as expected', () => {
     const sut = new AesKdf(false);
     sut.setSeed(kdfSeed);
     sut.setRounds(kdfRounds);
