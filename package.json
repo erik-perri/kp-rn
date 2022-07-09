@@ -7,7 +7,9 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "check-types": "tsc --noEmit",
+    "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
     "react": "18.0.0",
