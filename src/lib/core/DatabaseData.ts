@@ -8,9 +8,7 @@ export default class DatabaseData {
   private _kdf?: Kdf;
   private _key?: CompositeKey;
 
-  // public readonly masterSeed: PasswordKey = new PasswordKey('');
-  public readonly transformedDatabaseKey: PasswordKey = new PasswordKey('');
-  // public readonly challengeResponseKey: PasswordKey = new PasswordKey('');
+  public readonly transformedDatabaseKey: PasswordKey = new PasswordKey();
 
   constructor(key: CompositeKey) {
     this._key = key;

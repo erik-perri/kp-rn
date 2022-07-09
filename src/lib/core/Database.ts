@@ -71,7 +71,7 @@ export class Database {
       return true;
     }
 
-    let oldTransformedDatabaseKey = new PasswordKey('');
+    let oldTransformedDatabaseKey = new PasswordKey();
     if (!this.data.key.isEmpty) {
       oldTransformedDatabaseKey.setRawKey(
         this.data.transformedDatabaseKey.getRawKey(),

@@ -8,10 +8,12 @@ export default class PasswordKey extends Key {
 
   private rawKey: Uint8Array | undefined;
 
-  constructor(private readonly password: string) {
+  constructor(private readonly password?: string) {
     super(PasswordKey.UUID);
 
-    this.setPassword(password);
+    if (password !== undefined) {
+      this.setPassword(password);
+    }
   }
 
   getRawKey(): Uint8Array {
