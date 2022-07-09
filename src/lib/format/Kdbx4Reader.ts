@@ -36,9 +36,9 @@ export default class Kdbx4Reader extends KdbxReader {
     let fieldData: Uint8Array = new Uint8Array(0);
     if (fieldLen) {
       fieldData = reader.readBytes(fieldLen);
-      if (fieldData.length !== fieldLen) {
+      if (fieldData.byteLength !== fieldLen) {
         throw new Error(
-          `Invalid header data length: field ${HeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.length} found`,
+          `Invalid header data length: field ${HeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.byteLength} found`,
         );
       }
     }
@@ -126,7 +126,7 @@ export default class Kdbx4Reader extends KdbxReader {
       let nameBytes = new Uint8Array(0);
       if (nameLen) {
         nameBytes = reader.readBytes(nameLen);
-        if (nameBytes.length !== nameLen) {
+        if (nameBytes.byteLength !== nameLen) {
           throw new Error('Invalid variant map entry name data');
         }
       }
@@ -136,7 +136,7 @@ export default class Kdbx4Reader extends KdbxReader {
       let valueBytes = new Uint8Array(0);
       if (valueLen) {
         valueBytes = reader.readBytes(valueLen);
-        if (valueBytes.length !== valueLen) {
+        if (valueBytes.byteLength !== valueLen) {
           throw new Error('Invalid variant map entry value data');
         }
       }
@@ -231,7 +231,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
     const headerSha256 = reader.readBytes(32);
     const headerHmac = reader.readBytes(32);
-    if (headerSha256.length !== 32 || headerHmac.length !== 32) {
+    if (headerSha256.byteLength !== 32 || headerHmac.byteLength !== 32) {
       throw new Error('Invalid header checksum size');
     }
     if (
@@ -286,9 +286,9 @@ export default class Kdbx4Reader extends KdbxReader {
     let fieldData: Uint8Array | undefined;
     if (fieldLen) {
       fieldData = reader.readBytes(fieldLen);
-      if (fieldData.length !== fieldLen) {
+      if (fieldData.byteLength !== fieldLen) {
         throw new Error(
-          `Invalid inner header data length: field ${InnerHeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.length} found`,
+          `Invalid inner header data length: field ${InnerHeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.byteLength} found`,
         );
       }
     }

@@ -82,7 +82,7 @@ export class Database {
     }
 
     this.data.key = key;
-    if (transformedDatabaseKey.length > 0) {
+    if (transformedDatabaseKey.byteLength > 0) {
       this.data.transformedDatabaseKey.setRawKey(transformedDatabaseKey);
     }
 

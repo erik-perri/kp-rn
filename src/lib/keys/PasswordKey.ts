@@ -19,10 +19,10 @@ export default class PasswordKey extends Key {
   }
 
   setRawKey(data: Uint8Array): void {
-    if (data.length < 1) {
+    if (data.byteLength < 1) {
       this.rawKey = undefined;
     } else {
-      if (data.length !== SHA256_SIZE) {
+      if (data.byteLength !== SHA256_SIZE) {
         throw new Error('Invalid key length');
       }
       this.rawKey = new Uint8Array(data);

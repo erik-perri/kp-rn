@@ -28,8 +28,8 @@ export default abstract class Kdf {
 
   public setSeed(seed: Uint8Array): boolean {
     if (
-      seed.length < Kdf.KDF_MIN_SEED_SIZE ||
-      seed.length > Kdf.KDF_MAX_SEED_SIZE
+      seed.byteLength < Kdf.KDF_MIN_SEED_SIZE ||
+      seed.byteLength > Kdf.KDF_MAX_SEED_SIZE
     ) {
       return false;
     }

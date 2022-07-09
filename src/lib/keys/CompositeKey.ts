@@ -53,7 +53,7 @@ export default class CompositeKey extends Key {
     }
 
     const seed = kdf.getSeed();
-    if (!seed.length) {
+    if (!seed.byteLength) {
       throw new Error('Seed empty');
     }
 

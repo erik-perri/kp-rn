@@ -52,10 +52,10 @@ export default abstract class KdbxReader {
   }
 
   protected setCipher(data: Uint8Array, database: Database): void {
-    if (data.length !== 16) {
+    if (data.byteLength !== 16) {
       throw new Error(
         `Invalid cipher uuid length: ${data.toString()} (length=${
-          data.length
+          data.byteLength
         })`,
       );
     }
@@ -70,7 +70,7 @@ export default abstract class KdbxReader {
   }
 
   protected setCompressionFlags(data: Uint8Array, database: Database): void {
-    if (data.length !== 4) {
+    if (data.byteLength !== 4) {
       throw new Error('Invalid compression flags length');
     }
 
@@ -83,7 +83,7 @@ export default abstract class KdbxReader {
   }
 
   protected setMasterSeed(data: Uint8Array): void {
-    if (data.length !== 32) {
+    if (data.byteLength !== 32) {
       throw new Error('Invalid master seed size');
     }
 

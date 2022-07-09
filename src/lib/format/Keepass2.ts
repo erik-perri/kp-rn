@@ -130,7 +130,7 @@ export function toVariantMapFieldType(id: number): id is VariantMapFieldType {
 
 export function kdfFromParameters(map: VariantFieldMap): Kdf | undefined {
   const uuidBytes = map[KDFPARAM_UUID];
-  if (!(uuidBytes instanceof Uint8Array) || uuidBytes.length !== 16) {
+  if (!(uuidBytes instanceof Uint8Array) || uuidBytes.byteLength !== 16) {
     return undefined;
   }
 
