@@ -74,7 +74,7 @@ export class Database {
       );
     }
 
-    let transformedDatabaseKey: Uint8Array = new Uint8Array(0);
+    let transformedDatabaseKey: Uint8Array;
     if (!transformKey) {
       transformedDatabaseKey = oldTransformedDatabaseKey.getRawKey();
     } else {

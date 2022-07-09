@@ -6,9 +6,9 @@ import {BufferReader} from '../utilities/BufferReader';
 import CompositeKey from '../keys/CompositeKey';
 
 export default abstract class KdbxReader {
-  private masterSeed: Uint8Array | undefined;
-  private encryptionIV: Uint8Array | undefined;
-  private signature: [number, number] | undefined;
+  private masterSeed?: Uint8Array;
+  private encryptionIV?: Uint8Array;
+  private signature?: [number, number];
 
   async readDatabase(buffer: Buffer, key: CompositeKey): Promise<Database> {
     const reader = new BufferReader(buffer);

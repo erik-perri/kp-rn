@@ -224,11 +224,6 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('Unable to calculate database key');
     }
 
-    // const hash = new CryptoHash(CryptoHashAlgorithm.Sha256);
-    // hash.addData(this.getMasterSeed());
-    // hash.addData(database.getTransformedDatabaseKey());
-    // const finalKey = hash.result();
-
     const headerSha256 = reader.readBytes(32);
     const headerHmac = reader.readBytes(32);
     if (headerSha256.byteLength !== 32 || headerHmac.byteLength !== 32) {
@@ -263,58 +258,3 @@ export default class Kdbx4Reader extends KdbxReader {
     return database;
   }
 }
-
-/*
-  protected readInnerHeaderField(
-    reader: BufferReader,
-    database: Database,
-  ): boolean {
-    const fieldId = reader.readInt8();
-    if (!toInnerHeaderFieldId(fieldId)) {
-      throw new Error('Invalid inner header id size');
-    }
-    console.log('fieldId', InnerHeaderFieldId[fieldId]);
-
-    const fieldLen = reader.readUInt32LE(4);
-    if (!fieldLen) {
-      throw new Error(
-        `Invalid inner header field length: field ${InnerHeaderFieldId[fieldId]}`,
-      );
-    }
-    console.log('fieldLen', fieldLen);
-
-    let fieldData: Uint8Array | undefined;
-    if (fieldLen) {
-      fieldData = reader.readBytes(fieldLen);
-      if (fieldData.byteLength !== fieldLen) {
-        throw new Error(
-          `Invalid inner header data length: field ${InnerHeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.byteLength} found`,
-        );
-      }
-    }
-
-    switch (fieldId) {
-      case InnerHeaderFieldId.End:
-        return false;
-
-      case InnerHeaderFieldId.InnerRandomStreamID:
-        // setInnerRandomStreamID(fieldData);
-        break;
-
-      case InnerHeaderFieldId.InnerRandomStreamKey:
-        // setProtectedStreamKey(fieldData);
-        break;
-
-      case InnerHeaderFieldId.Binary: {
-        if (fieldLen < 1) {
-          throw new Error('Invalid inner header binary size');
-        }
-        // auto data = fieldData.mid(1);
-        // m_binaryPool.insert(QString::number(m_binaryPool.size()), data);
-        break;
-      }
-    }
-
-    return true;
-  }
- */
