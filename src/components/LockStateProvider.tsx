@@ -19,8 +19,8 @@ const LockStateContext = createContext<LockState>({
 const LockStateProvider: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
-  const [file, setFile] = useState<string>();
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
+  const [file] = useState<string>();
+  const [isUnlocked] = useState<boolean>(false);
 
   return (
     <LockStateContext.Provider
