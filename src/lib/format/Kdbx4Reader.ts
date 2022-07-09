@@ -198,12 +198,12 @@ export default class Kdbx4Reader extends KdbxReader {
     return map;
   }
 
-  protected readVersionDatabase(
+  protected async readVersionDatabase(
     reader: BufferReader,
     headerData: Uint8Array,
     key: CompositeKey,
     database: Database,
-  ): Database {
+  ): Promise<Database> {
     if (
       // eslint-disable-next-line no-bitwise
       (database.getFormatVersion() & FILE_VERSION_CRITICAL_MASK) !==

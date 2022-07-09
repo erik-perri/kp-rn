@@ -10,7 +10,7 @@ export default abstract class KdbxReader {
   private encryptionIV: Uint8Array | undefined;
   private signature: [number, number] | undefined;
 
-  readDatabase(buffer: Buffer, key: CompositeKey): Database {
+  async readDatabase(buffer: Buffer, key: CompositeKey): Promise<Database> {
     const reader = new BufferReader(buffer);
 
     const [signatureOne, signatureTwo, version] =
@@ -28,7 +28,7 @@ export default abstract class KdbxReader {
 
     const headerData = reader.getReadData();
 
-    return this.readVersionDatabase(reader, headerData, key, database);
+    return await this.readVersionDatabase(reader, headerData, key, database);
   }
 
   protected abstract readHeaderField(
@@ -41,7 +41,7 @@ export default abstract class KdbxReader {
     headerData: Uint8Array,
     key: CompositeKey,
     database: Database,
-  ): Database;
+  ): Promise<Database>;
 
   private static readMagicNumbers(reader: BufferReader) {
     const signatureOne = reader.readUInt32LE(4);

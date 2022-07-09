@@ -15,7 +15,7 @@ describe('Kbd4Reader', () => {
     );
 
     const reader = new Kdbx4Reader();
-    const database = reader.readDatabase(
+    const database = await reader.readDatabase(
       file,
       new CompositeKey([new PasswordKey('sample')]),
     );
