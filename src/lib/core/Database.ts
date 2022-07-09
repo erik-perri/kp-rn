@@ -37,6 +37,10 @@ export class Database {
     this.data.compressionAlgorithm = type;
   }
 
+  getCompressionAlgorithm(): CompressionAlgorithm {
+    return this.data.compressionAlgorithm;
+  }
+
   setKdf(kdf: Kdf) {
     this.data.kdf = kdf;
 

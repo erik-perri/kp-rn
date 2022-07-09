@@ -100,6 +100,20 @@ export function toInnerHeaderFieldId(id: number): id is InnerHeaderFieldId {
   return id >= InnerHeaderFieldId.End || id <= InnerHeaderFieldId.Binary;
 }
 
+export enum ProtectedStreamAlgo {
+  ArcFourVariant = 1,
+  Salsa20 = 2,
+  ChaCha20 = 3,
+  InvalidProtectedStreamAlgo = -1,
+}
+
+export function toProtectedStreamAlgo(id: number): id is ProtectedStreamAlgo {
+  return (
+    id >= ProtectedStreamAlgo.ArcFourVariant ||
+    id <= ProtectedStreamAlgo.ChaCha20
+  );
+}
+
 export enum VariantMapFieldType {
   End = 0,
   // Byte = 0x02,

@@ -33,4 +33,8 @@ export class BufferReader {
   getReadData(): Uint8Array {
     return this.buffer.subarray(0, this.offset);
   }
+
+  subarray(start?: number, end?: number): Uint8Array {
+    return this.buffer.subarray(start ?? this.offset, end);
+  }
 }

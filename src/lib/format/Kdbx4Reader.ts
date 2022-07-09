@@ -1,5 +1,5 @@
 import KdbxReader from './KdbxReader';
-import {Database} from '../core/Database';
+import {CompressionAlgorithm, Database} from '../core/Database';
 import {BufferReader} from '../utilities/BufferReader';
 import CompositeKey from '../keys/CompositeKey';
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
@@ -9,17 +9,23 @@ import {
   FILE_VERSION_CRITICAL_MASK,
   HeaderFieldId,
   hmacKey as keepass2HmacKey,
+  InnerHeaderFieldId,
   kdfFromParameters,
   toHeaderFieldId,
+  toInnerHeaderFieldId,
   toVariantMapFieldType,
   VariantFieldMap,
   VARIANTMAP_CRITICAL_MASK,
   VARIANTMAP_VERSION,
   VariantMapFieldType,
 } from './Keepass2';
-import {getHmacKey, UINT64_MAX} from '../streams/HmacBlockStream';
+import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
+import * as crypto from 'crypto';
+import {gunzip} from '../utilities/zlib';
 
 export default class Kdbx4Reader extends KdbxReader {
+  private binaryPool: Uint8Array[] = [];
+
   protected readHeaderField(reader: BufferReader, database: Database): boolean {
     const fieldId = reader.readInt8();
     if (!toHeaderFieldId(fieldId)) {
@@ -204,6 +210,8 @@ export default class Kdbx4Reader extends KdbxReader {
     key: CompositeKey,
     database: Database,
   ): Promise<Database> {
+    this.binaryPool.length = 0;
+
     if (
       // eslint-disable-next-line no-bitwise
       (database.getFormatVersion() & FILE_VERSION_CRITICAL_MASK) !==
@@ -223,6 +231,11 @@ export default class Kdbx4Reader extends KdbxReader {
     if (!database.setKey(key)) {
       throw new Error('Unable to calculate database key');
     }
+
+    const hash = new CryptoHash(CryptoHashAlgorithm.Sha256);
+    hash.addData(this.getMasterSeed());
+    hash.addData(database.getTransformedDatabaseKey());
+    const finalKey = hash.result();
 
     const headerSha256 = reader.readBytes(32);
     const headerHmac = reader.readBytes(32);
@@ -255,6 +268,86 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('HMAC mismatch');
     }
 
+    const stream = new HmacBlockStream(
+      new BufferReader(new Buffer(reader.subarray())),
+      hmacKey,
+    );
+
+    let readBytes = Buffer.alloc(0);
+
+    while (stream.readHashedBlock()) {
+      const cipher = crypto
+        .createDecipheriv('aes-256-cbc', finalKey, this.getEncryptionIV())
+        .setAutoPadding(true);
+
+      const result = Buffer.concat([
+        cipher.update(stream.getBuffer()),
+        cipher.final(),
+      ]);
+
+      readBytes = Buffer.concat([readBytes, result]);
+    }
+
+    const isCompressed =
+      database.getCompressionAlgorithm() ===
+      CompressionAlgorithm.CompressionGZip;
+
+    const buffer = isCompressed ? await gunzip(readBytes) : readBytes;
+    const bufferReader = new BufferReader(buffer);
+
+    while (this.readInnerHeaderField(bufferReader)) {
+      //
+    }
+
+    const remaining = bufferReader.subarray();
+    console.log(String.fromCharCode(...remaining));
+
     return database;
+  }
+
+  protected readInnerHeaderField(reader: BufferReader): boolean {
+    const fieldId = reader.readInt8();
+    if (!toInnerHeaderFieldId(fieldId)) {
+      throw new Error('Invalid inner header id size');
+    }
+
+    if (fieldId === InnerHeaderFieldId.End) {
+      return false;
+    }
+
+    const fieldLen = reader.readUInt32LE(4);
+    let fieldData: Uint8Array | undefined;
+    if (fieldLen) {
+      fieldData = reader.readBytes(fieldLen);
+      if (fieldData.byteLength !== fieldLen) {
+        throw new Error(
+          `Invalid inner header data length: field ${InnerHeaderFieldId[fieldId]}, ${fieldLen} expected, ${fieldData.byteLength} found`,
+        );
+      }
+    }
+
+    if (!fieldData) {
+      throw new Error(`Missing field data for ${InnerHeaderFieldId[fieldId]}`);
+    }
+
+    switch (fieldId) {
+      case InnerHeaderFieldId.InnerRandomStreamID:
+        this.setInnerRandomStreamID(fieldData);
+        break;
+
+      case InnerHeaderFieldId.InnerRandomStreamKey:
+        this.setProtectedStreamKey(fieldData);
+        break;
+
+      case InnerHeaderFieldId.Binary: {
+        if (fieldLen < 1) {
+          throw new Error('Invalid inner header binary size');
+        }
+        this.binaryPool.push(fieldData.subarray(1));
+        break;
+      }
+    }
+
+    return true;
   }
 }

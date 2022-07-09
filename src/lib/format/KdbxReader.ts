@@ -1,14 +1,16 @@
-import {Database} from '../core/Database';
+import {Database, toCompressionAlgorithm} from '../core/Database';
 import {stringify as uuidStringify} from 'uuid';
 import {cipherUuidToMode, SymmetricCipherMode} from '../crypto/SymmetricCipher';
-import {toCompressionAlgorithm} from '../core/Database';
 import {BufferReader} from '../utilities/BufferReader';
 import CompositeKey from '../keys/CompositeKey';
+import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
 
 export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;
   private encryptionIV?: Uint8Array;
   private signature?: [number, number];
+  private irsAlgo?: ProtectedStreamAlgo;
+  private streamKey?: Uint8Array;
 
   async readDatabase(buffer: Buffer, key: CompositeKey): Promise<Database> {
     const reader = new BufferReader(buffer);
@@ -117,5 +119,35 @@ export default abstract class KdbxReader {
       throw new Error('signature not set');
     }
     return this.signature;
+  }
+
+  protected setInnerRandomStreamID(data: Uint8Array) {
+    if (data.byteLength !== 4) {
+      throw new Error('Invalid random stream id size');
+    }
+
+    const id = new DataView(data.buffer).getUint32(0, true);
+    if (
+      !toProtectedStreamAlgo(id) ||
+      [
+        ProtectedStreamAlgo.InvalidProtectedStreamAlgo,
+        ProtectedStreamAlgo.ArcFourVariant,
+      ].includes(id)
+    ) {
+      throw new Error('Invalid inner random stream cipher');
+    }
+
+    this.irsAlgo = id;
+  }
+
+  protected getInnerRandomStreamID(): ProtectedStreamAlgo {
+    if (this.irsAlgo === undefined) {
+      throw new Error('Inner random stream algorithm not set');
+    }
+    return this.irsAlgo;
+  }
+
+  protected setProtectedStreamKey(data: Uint8Array) {
+    this.streamKey = data;
   }
 }
