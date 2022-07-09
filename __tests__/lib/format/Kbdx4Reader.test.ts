@@ -11,7 +11,7 @@ import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf
 describe('Kbd4Reader', () => {
   it('can open a database', async () => {
     const file = fs.readFileSync(
-      '__tests__/fixtures/sample-aes256-aes-kdf-kdbx4.kdbx',
+      '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
     );
 
     const reader = new Kdbx4Reader();
