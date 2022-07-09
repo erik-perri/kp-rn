@@ -311,11 +311,12 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('Invalid inner header id size');
     }
 
+    const fieldLen = reader.readUInt32LE(4);
+
     if (fieldId === InnerHeaderFieldId.End) {
       return false;
     }
 
-    const fieldLen = reader.readUInt32LE(4);
     let fieldData: Uint8Array | undefined;
     if (fieldLen) {
       fieldData = reader.readBytes(fieldLen);
