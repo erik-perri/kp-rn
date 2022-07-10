@@ -257,6 +257,7 @@ export default class Kdbx4Reader extends KdbxReader {
       this.getMasterSeed(),
       database.getTransformedDatabaseKey(),
     );
+
     if (
       !areUint8ArraysEqual(
         headerHmac,

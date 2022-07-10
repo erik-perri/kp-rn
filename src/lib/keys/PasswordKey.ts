@@ -4,7 +4,6 @@ import {SHA256_SIZE} from '../utilities/sizes';
 
 export default class PasswordKey extends Key {
   public static readonly UUID = '77e90411-303a-43f2-b773-853b05635ead';
-
   private rawKey: Uint8Array | undefined;
 
   constructor(private readonly password?: string) {
@@ -20,14 +19,10 @@ export default class PasswordKey extends Key {
   }
 
   setRawKey(data: Uint8Array): void {
-    if (data.byteLength < 1) {
-      this.rawKey = undefined;
-    } else {
-      if (data.byteLength !== SHA256_SIZE) {
-        throw new Error('Invalid key length');
-      }
-      this.rawKey = new Uint8Array(data);
+    if (data.byteLength !== SHA256_SIZE) {
+      throw new Error('Invalid key length');
     }
+    this.rawKey = new Uint8Array(data);
   }
 
   deserialize(_data: Uint8Array): void {
