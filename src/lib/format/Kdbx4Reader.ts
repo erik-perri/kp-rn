@@ -23,6 +23,7 @@ import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
 import * as crypto from 'crypto';
 import {gunzip} from '../utilities/zlib';
 import KdbxXmlReader from './KdbxXmlReader';
+import KeePass2RandomStream from './KeePass2RandomStream';
 
 export default class Kdbx4Reader extends KdbxReader {
   private binaryPool: Record<string, Uint8Array> = {};
@@ -300,12 +301,16 @@ export default class Kdbx4Reader extends KdbxReader {
       //
     }
 
-    // TODO Initialize random stream with getSymmetricCipherMode
+    const randomStream = new KeePass2RandomStream();
+    randomStream.init(
+      this.getSymmetricCipherMode(),
+      this.getProtectedStreamKey(),
+    );
 
     const xmlReader = new KdbxXmlReader(FILE_VERSION_4, this.binaryPool);
     const remaining = bufferReader.subarray();
 
-    await xmlReader.readDatabase(remaining, database);
+    await xmlReader.readDatabase(remaining, database, randomStream);
 
     return database;
   }

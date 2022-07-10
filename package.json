@@ -12,10 +12,11 @@
     "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.0.8",
     "react": "18.0.0",
     "react-native": "0.69.1",
-    "uuid": "^8.3.2"
+    "ts-chacha20": "^1.2.0",
+    "uuid": "^8.3.2",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -28,6 +29,7 @@
     "@types/react-native": "^0.69.1",
     "@types/react-test-renderer": "^18.0.0",
     "@types/uuid": "^8.3.4",
+    "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "babel-jest": "^26.6.3",

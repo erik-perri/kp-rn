@@ -1,37 +1,33 @@
-import {XMLParser} from 'fast-xml-parser';
+import {parseStringPromise} from 'xml2js';
 import {Database} from '../core/Database';
-
-interface KeePassFile {
-  KeePassFile: {
-    Meta: {
-      Generator: string;
-      DatabaseName: string;
-    };
-  };
-}
-
-function isKeePassFile(parsed: unknown): parsed is KeePassFile {
-  const parsedAsKPFile = parsed as KeePassFile;
-
-  return typeof parsedAsKPFile?.KeePassFile?.Meta?.DatabaseName === 'string';
-}
+import KeePass2RandomStream from './KeePass2RandomStream';
+import {FILE_VERSION_4} from './Keepass2';
+import Kdbx4XmlReader from './Kdbx4XmlReader';
 
 export default class KdbxXmlReader {
   constructor(
     private readonly version: number,
     private readonly binaryPool: Record<string, Uint8Array>,
   ) {
-    //
+    if (version !== FILE_VERSION_4) {
+      throw new Error('Unsupported file version');
+    }
   }
 
-  async readDatabase(data: Uint8Array, database: Database): Promise<void> {
-    const parser = new XMLParser();
-    const parsed = parser.parse(String.fromCharCode(...data));
-    if (!isKeePassFile(parsed)) {
-      throw new Error('Unknown file format');
-    }
+  async readDatabase(
+    data: Uint8Array,
+    database: Database,
+    randomStream: KeePass2RandomStream,
+  ): Promise<void> {
+    const parsedXml = await parseStringPromise(String.fromCharCode(...data), {
+      emptyTag: undefined,
+    });
 
-    database.metadata.generator = parsed.KeePassFile.Meta.Generator;
-    database.metadata.databaseName = parsed.KeePassFile.Meta.DatabaseName;
+    const parser = new Kdbx4XmlReader();
+    const parsedJson = parser.decodeFile(parsedXml, randomStream);
+
+    database.metadata.generator = parsedJson.KeePassFile.Meta[0].Generator[0];
+    database.metadata.databaseName =
+      parsedJson.KeePassFile.Meta[0].DatabaseName[0];
   }
 }
