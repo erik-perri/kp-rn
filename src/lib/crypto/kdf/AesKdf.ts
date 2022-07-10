@@ -37,7 +37,7 @@ export default class AesKdf extends Kdf {
 
     while (rounds--) {
       const cipher = crypto
-        .createCipheriv('aes-256-ecb', seed, new Buffer(0))
+        .createCipheriv('aes-256-ecb', seed, Buffer.alloc(0))
         .setAutoPadding(false);
       result = Buffer.concat([cipher.update(result), cipher.final()]);
     }

@@ -72,7 +72,7 @@ export default class Kdbx4Reader extends KdbxReader {
         break;
 
       case HeaderFieldId.KdfParameters: {
-        const kdfReader = new BufferReader(new Buffer(fieldData), 0);
+        const kdfReader = new BufferReader(Buffer.from(fieldData), 0);
         const kdfParams = this.readVariantMap(kdfReader);
 
         const kdf = kdfFromParameters(kdfParams);
@@ -88,7 +88,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
       case HeaderFieldId.PublicCustomData: {
         database.setPublicCustomData(
-          this.readVariantMap(new BufferReader(new Buffer(fieldData), 0)),
+          this.readVariantMap(new BufferReader(Buffer.from(fieldData), 0)),
         );
         break;
       }
@@ -271,7 +271,7 @@ export default class Kdbx4Reader extends KdbxReader {
     }
 
     const stream = new HmacBlockStream(
-      new BufferReader(new Buffer(reader.subarray())),
+      new BufferReader(Buffer.from(reader.subarray())),
       hmacKey,
     );
 

@@ -42,7 +42,7 @@ export default class PasswordKey extends Key {
   private setPassword(password: string) {
     this.setRawKey(
       CryptoHash.hash(
-        new Buffer(password, 'utf-8'),
+        Buffer.from(password, 'utf-8'),
         CryptoHashAlgorithm.Sha256,
       ),
     );
