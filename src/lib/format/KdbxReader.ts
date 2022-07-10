@@ -4,6 +4,7 @@ import SymmetricCipher, {SymmetricCipherMode} from '../crypto/SymmetricCipher';
 import {BufferReader} from '../utilities/BufferReader';
 import CompositeKey from '../keys/CompositeKey';
 import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
+import {UUID_SIZE} from '../utilities/sizes';
 
 export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;
@@ -54,7 +55,7 @@ export default abstract class KdbxReader {
   }
 
   protected setCipher(data: Uint8Array, database: Database): void {
-    if (data.byteLength !== 16) {
+    if (data.byteLength !== UUID_SIZE) {
       throw new Error(
         `Invalid cipher uuid length: ${data.toString()} (length=${
           data.byteLength

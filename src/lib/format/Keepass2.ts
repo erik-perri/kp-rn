@@ -2,6 +2,7 @@ import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import Kdf from '../crypto/kdf/Kdf';
 import {stringify as uuidStringify} from 'uuid';
 import AesKdf from '../crypto/kdf/AesKdf';
+import {UUID_SIZE} from '../utilities/sizes';
 
 export const SIGNATURE_1 = 0x9aa2d903;
 export const SIGNATURE_2 = 0xb54bfb67;
@@ -144,7 +145,10 @@ export function toVariantMapFieldType(id: number): id is VariantMapFieldType {
 
 export function kdfFromParameters(map: VariantFieldMap): Kdf | undefined {
   const uuidBytes = map[KDFPARAM_UUID];
-  if (!(uuidBytes instanceof Uint8Array) || uuidBytes.byteLength !== 16) {
+  if (
+    !(uuidBytes instanceof Uint8Array) ||
+    uuidBytes.byteLength !== UUID_SIZE
+  ) {
     return undefined;
   }
 

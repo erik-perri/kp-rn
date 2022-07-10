@@ -1,7 +1,6 @@
 import {Key} from './Key';
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
-
-const SHA256_SIZE = 32;
+import {SHA256_SIZE} from '../utilities/sizes';
 
 export default class PasswordKey extends Key {
   public static readonly UUID = '77e90411-303a-43f2-b773-853b05635ead';
