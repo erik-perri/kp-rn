@@ -46,10 +46,10 @@ export default class CompositeKey extends Key {
     return new Uint8Array(0);
   }
 
-  transform(kdf: Kdf): Uint8Array {
+  async transform(kdf: Kdf): Promise<Uint8Array> {
     if (kdf.uuid === KDF_AES_KDBX3) {
       // legacy KDBX3 AES-KDF, challenge response is added later to the hash
-      return kdf.transform(this.getRawKey());
+      return await kdf.transform(this.getRawKey());
     }
 
     const seed = kdf.getSeed();
@@ -57,6 +57,6 @@ export default class CompositeKey extends Key {
       throw new Error('Seed empty');
     }
 
-    return kdf.transform(this.getRawKey(seed));
+    return await kdf.transform(this.getRawKey(seed));
   }
 }

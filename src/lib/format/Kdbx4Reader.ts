@@ -230,7 +230,7 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('missing database headers');
     }
 
-    if (!database.setKey(key)) {
+    if (!(await database.setKey(key))) {
       throw new Error('Unable to calculate database key');
     }
 

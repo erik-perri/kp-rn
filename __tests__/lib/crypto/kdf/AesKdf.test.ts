@@ -9,12 +9,12 @@ const kdfSeed = new Uint8Array([
 const kdfRounds = BigInt(1);
 
 describe('AesKdf', () => {
-  it('transforms as expected', () => {
+  it('transforms as expected', async () => {
     const sut = new AesKdf(false);
     sut.setSeed(kdfSeed);
     sut.setRounds(kdfRounds);
 
-    const result = sut.transform(
+    const result = await sut.transform(
       new Uint8Array([
         0x6d, 0x4e, 0xf6, 0xf4, 0x19, 0xf3, 0x1d, 0x1c, 0x4e, 0xf5, 0xde, 0x55,
         0x82, 0xc0, 0x9a, 0x54, 0x2e, 0x5e, 0x10, 0x05, 0xce, 0xc3, 0x3b, 0xac,

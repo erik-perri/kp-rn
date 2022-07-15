@@ -24,15 +24,15 @@ export default class AesKdf extends Kdf {
     return seed instanceof Uint8Array && this.setSeed(seed);
   }
 
-  transform(raw: Uint8Array): Uint8Array {
-    return this.transformKeyRaw(raw, this.getSeed(), this.getRounds());
+  async transform(raw: Uint8Array): Promise<Uint8Array> {
+    return await this.transformKeyRaw(raw, this.getSeed(), this.getRounds());
   }
 
-  private transformKeyRaw(
+  private async transformKeyRaw(
     key: Uint8Array,
     seed: Uint8Array,
     rounds: bigint,
-  ): Uint8Array {
+  ): Promise<Uint8Array> {
     let result = new Uint8Array(key);
 
     while (rounds--) {
@@ -42,6 +42,6 @@ export default class AesKdf extends Kdf {
       result = Buffer.concat([cipher.update(result), cipher.final()]);
     }
 
-    return CryptoHash.hash(result, CryptoHashAlgorithm.Sha256);
+    return Promise.resolve(CryptoHash.hash(result, CryptoHashAlgorithm.Sha256));
   }
 }

@@ -57,5 +57,5 @@ export default abstract class Kdf {
 
   public abstract processParameters(map: VariantFieldMap): boolean;
 
-  public abstract transform(raw: Uint8Array): Uint8Array;
+  public abstract transform(raw: Uint8Array): Promise<Uint8Array>;
 }

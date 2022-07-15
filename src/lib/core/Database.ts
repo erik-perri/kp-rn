@@ -67,7 +67,7 @@ export class Database {
     return this.formatVersion;
   }
 
-  setKey(key: CompositeKey | null, transformKey: boolean = true) {
+  async setKey(key: CompositeKey | null, transformKey: boolean = true) {
     if (!key) {
       throw new Error('reset not implemented');
     }
@@ -83,7 +83,7 @@ export class Database {
     if (!transformKey) {
       transformedDatabaseKey = oldTransformedDatabaseKey.getRawKey();
     } else {
-      transformedDatabaseKey = key.transform(this.data.kdf);
+      transformedDatabaseKey = await key.transform(this.data.kdf);
     }
 
     this.data.key = key;
