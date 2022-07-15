@@ -23,17 +23,18 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void transformKey(ReadableArray key, ReadableArray seed, double iterations, Promise promise) {
+    public void transformAesKdfKey(ReadableArray key, ReadableArray seed, double iterations, Promise promise) {
         try {
             byte[] keyBytes = getBytesFromArray(key);
             byte[] seedBytes = getBytesFromArray(seed);
 
-            byte[] transformedBytes = KpHelper.transformKey(keyBytes, seedBytes, (int) iterations);
+            byte[] transformedBytes = KpHelper.transformAesKdfKey(keyBytes, seedBytes, (int) iterations);
 
             WritableArray result = new WritableNativeArray();
             for (byte b : transformedBytes) {
                 result.pushInt(b);
             }
+
             promise.resolve(result);
         } catch (Exception e) {
             promise.reject(e);

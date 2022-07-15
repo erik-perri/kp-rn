@@ -10,4 +10,5 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := helper
 LOCAL_SRC_FILES := helper.cpp
 LOCAL_SHARED_LIBRARIES := botan
+LOCAL_LDLIBS := -llog
 include $(BUILD_SHARED_LIBRARY)

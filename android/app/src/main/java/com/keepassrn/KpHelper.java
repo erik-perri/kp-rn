@@ -6,5 +6,5 @@ public class KpHelper {
         System.loadLibrary("helper");
     }
 
-    public static native byte[] transformKey(byte[] key, byte[] seed, int rounds);
+    public static native byte[] transformAesKdfKey(byte[] key, byte[] seed, int rounds);
 }
