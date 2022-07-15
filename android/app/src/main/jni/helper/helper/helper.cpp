@@ -1,5 +1,6 @@
 #include <jni.h>
-#include <botan_all.h>
+#include <botan/types.h>
+#include <botan/block_cipher.h>
 
 using namespace Botan;
 
