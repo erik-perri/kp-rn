@@ -20,6 +20,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformKey
 
     auto *keyData = reinterpret_cast<uint8_t *>(env->GetByteArrayElements(key, nullptr));
     if (keyData == nullptr) {
+        env->ReleaseByteArrayElements(seed, reinterpret_cast<jbyte *>(seedData), JNI_ABORT);
         return nullptr;
     }
 
