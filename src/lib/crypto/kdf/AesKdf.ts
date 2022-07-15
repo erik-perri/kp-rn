@@ -1,5 +1,4 @@
 import Kdf from './Kdf';
-import * as crypto from 'crypto';
 import {
   KDF_AES_KDBX3,
   KDF_AES_KDBX4,
@@ -8,6 +7,7 @@ import {
   VariantFieldMap,
 } from '../../format/Keepass2';
 import CryptoHash, {CryptoHashAlgorithm} from '../CryptoHash';
+import KpHelperModule from '../../utilities/KpHelperModule';
 
 export default class AesKdf extends Kdf {
   constructor(private legacyKdbx3: boolean = false) {
@@ -25,23 +25,20 @@ export default class AesKdf extends Kdf {
   }
 
   async transform(raw: Uint8Array): Promise<Uint8Array> {
-    return await this.transformKeyRaw(raw, this.getSeed(), this.getRounds());
-  }
-
-  private async transformKeyRaw(
-    key: Uint8Array,
-    seed: Uint8Array,
-    rounds: bigint,
-  ): Promise<Uint8Array> {
-    let result = new Uint8Array(key);
-
-    while (rounds--) {
-      const cipher = crypto
-        .createCipheriv('aes-256-ecb', seed, Buffer.alloc(0))
-        .setAutoPadding(false);
-      result = Buffer.concat([cipher.update(result), cipher.final()]);
+    const rounds = Number(this.getRounds());
+    if (rounds < this.getRounds()) {
+      throw new Error('Rounds too high');
     }
 
-    return Promise.resolve(CryptoHash.hash(result, CryptoHashAlgorithm.Sha256));
+    return await AesKdf.transformKeyRaw(raw, this.getSeed(), rounds);
+  }
+
+  private static async transformKeyRaw(
+    key: Uint8Array,
+    seed: Uint8Array,
+    rounds: number,
+  ): Promise<Uint8Array> {
+    const result = await KpHelperModule.transformAesKdfKey(key, seed, rounds);
+    return CryptoHash.hash(new Uint8Array(result), CryptoHashAlgorithm.Sha256);
   }
 }

@@ -1,3 +1,7 @@
+jest.mock('../src/lib/utilities/KpHelperModule', () =>
+  require('./KpHelperModuleMock'),
+);
+
 expect.extend({
   toEqualUint8Array(received: Uint8Array, expected: Uint8Array) {
     const message = () =>
