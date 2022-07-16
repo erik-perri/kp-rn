@@ -31,25 +31,29 @@ export class LocalHelperModule {
     key: Uint8Array,
     seed: Uint8Array,
     iterations: number,
-  ): Promise<number[]> {
-    return await this.module.transformAesKdfKey(
-      [...key.values()],
-      [...seed.values()],
-      iterations,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.transformAesKdfKey(
+        [...key.values()],
+        [...seed.values()],
+        iterations,
+      ),
     );
   }
 
-  async readFile(file: string): Promise<number[]> {
-    return await this.module.readFile(file);
+  async readFile(file: string): Promise<Uint8Array> {
+    return Uint8Array.from(await this.module.readFile(file));
   }
 
   async createHash(
     data: Uint8Array[],
     algorithm: CryptoHashAlgorithm,
-  ): Promise<number[]> {
-    return await this.module.createHash(
-      data.map(datum => [...datum.values()]),
-      algorithm,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.createHash(
+        data.map(datum => [...datum.values()]),
+        algorithm,
+      ),
     );
   }
 
@@ -57,11 +61,13 @@ export class LocalHelperModule {
     key: Uint8Array,
     data: Uint8Array[],
     algorithm: CryptoHashAlgorithm,
-  ): Promise<number[]> {
-    return this.module.createHmac(
-      [...key.values()],
-      data.map(datum => [...datum.values()]),
-      algorithm,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.createHmac(
+        [...key.values()],
+        data.map(datum => [...datum.values()]),
+        algorithm,
+      ),
     );
   }
 }

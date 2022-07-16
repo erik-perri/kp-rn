@@ -14,7 +14,7 @@ export default class CryptoHash {
       data = [data];
     }
 
-    return Uint8Array.from(await KpHelperModule.createHash(data, algo));
+    return await KpHelperModule.createHash(data, algo);
   }
 
   public static async hmac(
@@ -25,10 +25,7 @@ export default class CryptoHash {
     if (!Array.isArray(data)) {
       data = [data];
     }
-    const hmac = await KpHelperModule.createHmac(key, data, algo);
-    if (!hmac) {
-      throw new Error('Failed to create Hmac');
-    }
-    return Uint8Array.from(hmac);
+
+    return await KpHelperModule.createHmac(key, data, algo);
   }
 }
