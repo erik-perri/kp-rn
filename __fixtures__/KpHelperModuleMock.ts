@@ -2,6 +2,7 @@ import {HelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
 
 const KpHelperModuleMock: HelperModule = {
+  readFile: jest.fn().mockResolvedValue([]),
   transformAesKdfKey: jest
     .fn<
       Promise<number[]>,
