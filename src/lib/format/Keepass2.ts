@@ -3,6 +3,7 @@ import Kdf from '../crypto/kdf/Kdf';
 import {stringify as uuidStringify} from 'uuid';
 import AesKdf from '../crypto/kdf/AesKdf';
 import {UUID_SIZE} from '../utilities/sizes';
+import {BigInteger} from 'big-integer';
 
 export const SIGNATURE_1 = 0x9aa2d903;
 export const SIGNATURE_2 = 0xb54bfb67;
@@ -136,7 +137,12 @@ export enum VariantMapFieldType {
   ByteArray = 0x42,
 }
 
-export type VariantFieldTypes = boolean | bigint | number | string | Uint8Array;
+export type VariantFieldTypes =
+  | boolean
+  | BigInteger
+  | number
+  | string
+  | Uint8Array;
 export type VariantFieldMap = Record<string, VariantFieldTypes>;
 
 export function toVariantMapFieldType(id: number): id is VariantMapFieldType {

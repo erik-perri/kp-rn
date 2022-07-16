@@ -1,8 +1,9 @@
 import {VariantFieldMap} from '../../format/Keepass2';
+import bigInt, {BigInteger} from 'big-integer';
 
 export default abstract class Kdf {
   private seed: Uint8Array = new Uint8Array(0);
-  private rounds: bigint = BigInt(0);
+  private rounds: BigInteger = bigInt(0);
 
   public static readonly KDF_MIN_SEED_SIZE = 8;
   public static readonly KDF_MAX_SEED_SIZE = 32;
@@ -42,8 +43,12 @@ export default abstract class Kdf {
     return this.seed;
   }
 
-  public setRounds(rounds: bigint): boolean {
-    if (rounds < 1 || rounds > Number.MAX_SAFE_INTEGER) {
+  public setRounds(rounds: number | BigInteger): boolean {
+    if (typeof rounds === 'number') {
+      rounds = bigInt(rounds);
+    }
+
+    if (rounds.lesser(1) || rounds.greater(Number.MAX_SAFE_INTEGER)) {
       return false;
     }
 
@@ -51,7 +56,7 @@ export default abstract class Kdf {
     return true;
   }
 
-  public getRounds(): bigint {
+  public getRounds(): BigInteger {
     return this.rounds;
   }
 

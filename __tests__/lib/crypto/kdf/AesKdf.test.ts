@@ -1,4 +1,5 @@
 import AesKdf from '../../../../src/lib/crypto/kdf/AesKdf';
+import bigInt from 'big-integer';
 
 const kdfSeed = Uint8Array.from([
   0x93, 0x16, 0xf5, 0x2d, 0x88, 0xe9, 0x3f, 0x08, 0x65, 0xff, 0xaf, 0x96, 0x38,
@@ -6,7 +7,7 @@ const kdfSeed = Uint8Array.from([
   0x0c, 0xf9, 0x15, 0x0e, 0xe7, 0xd3,
 ]);
 
-const kdfRounds = BigInt(1);
+const kdfRounds = bigInt(1);
 
 describe('AesKdf', () => {
   it('transforms as expected', async () => {

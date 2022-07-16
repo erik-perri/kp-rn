@@ -1,5 +1,7 @@
 /* eslint-disable no-bitwise */
 
+import bigInt, {BigInteger} from 'big-integer';
+
 export default class Uint8ArrayReader {
   private readonly bytes: Uint8Array;
 
@@ -124,7 +126,7 @@ export default class Uint8ArrayReader {
     );
   }
 
-  readInt64BE(offset: number): bigint {
+  readInt64BE(offset: number): BigInteger {
     const first = this.bytes[offset];
     const last = this.bytes[offset + 7];
 
@@ -134,18 +136,17 @@ export default class Uint8ArrayReader {
       this.bytes[++offset] * 2 ** 8 +
       this.bytes[++offset];
 
-    return (
-      (BigInt(value) << 32n) +
-      BigInt(
+    return bigInt(value)
+      .shiftLeft(32)
+      .add(
         this.bytes[++offset] * 2 ** 24 +
           this.bytes[++offset] * 2 ** 16 +
           this.bytes[++offset] * 2 ** 8 +
           last,
-      )
-    );
+      );
   }
 
-  readInt64LE(offset: number): bigint {
+  readInt64LE(offset: number): BigInteger {
     const first = this.bytes[offset];
     const last = this.bytes[offset + 7];
 
@@ -155,18 +156,17 @@ export default class Uint8ArrayReader {
       this.bytes[offset + 6] * 2 ** 16 +
       (last << 24); // Overflow
 
-    return (
-      (BigInt(value) << 32n) +
-      BigInt(
+    return bigInt(value)
+      .shiftLeft(32)
+      .add(
         first +
           this.bytes[++offset] * 2 ** 8 +
           this.bytes[++offset] * 2 ** 16 +
           this.bytes[++offset] * 2 ** 24,
-      )
-    );
+      );
   }
 
-  readUInt64BE(offset: number): bigint {
+  readUInt64BE(offset: number): BigInteger {
     const first = this.bytes[offset];
     const last = this.bytes[offset + 7];
 
@@ -182,10 +182,10 @@ export default class Uint8ArrayReader {
       this.bytes[++offset] * 2 ** 8 +
       last;
 
-    return (BigInt(hi) << 32n) + BigInt(lo);
+    return bigInt(hi).shiftLeft(32).add(lo);
   }
 
-  readUInt64LE(offset: number): bigint {
+  readUInt64LE(offset: number): BigInteger {
     const first = this.bytes[offset];
     const last = this.bytes[offset + 7];
 
@@ -201,7 +201,7 @@ export default class Uint8ArrayReader {
       this.bytes[++offset] * 2 ** 16 +
       last * 2 ** 24;
 
-    return BigInt(lo) + (BigInt(hi) << 32n);
+    return bigInt(lo).add(bigInt(hi).shiftLeft(32));
   }
 
   slice(start?: number, end?: number): Uint8Array {

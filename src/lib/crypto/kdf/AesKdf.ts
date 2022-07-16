@@ -16,7 +16,17 @@ export default class AesKdf extends Kdf {
 
   processParameters(map: VariantFieldMap): boolean {
     const rounds = map[KDFPARAM_AES_ROUNDS];
-    if (typeof rounds !== 'bigint' || !this.setRounds(rounds)) {
+
+    if (
+      typeof rounds === 'boolean' ||
+      typeof rounds === 'string' ||
+      typeof rounds === 'undefined' ||
+      ArrayBuffer.isView(rounds)
+    ) {
+      return false;
+    }
+
+    if (!this.setRounds(rounds)) {
       return false;
     }
 
@@ -25,12 +35,13 @@ export default class AesKdf extends Kdf {
   }
 
   async transform(raw: Uint8Array): Promise<Uint8Array> {
-    const rounds = Number(this.getRounds());
-    if (rounds < this.getRounds()) {
+    const rounds = this.getRounds();
+    const roundsAsNumber = rounds.toJSNumber();
+    if (rounds.greater(roundsAsNumber)) {
       throw new Error('Rounds too high');
     }
 
-    return await AesKdf.transformKeyRaw(raw, this.getSeed(), rounds);
+    return await AesKdf.transformKeyRaw(raw, this.getSeed(), roundsAsNumber);
   }
 
   private static async transformKeyRaw(

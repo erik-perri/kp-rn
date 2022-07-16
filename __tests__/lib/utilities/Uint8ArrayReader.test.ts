@@ -1,10 +1,11 @@
 import Uint8ArrayReader from '../../../src/lib/utilities/Uint8ArrayReader';
+import bigInt, {BigInteger} from 'big-integer';
 
 describe('Uint8ArrayReader', () => {
   describe('read*', () => {
     type TestCase = {
       offset: number;
-      expected: number | bigint;
+      expected: number | BigInteger;
       method: keyof Uint8ArrayReader;
     };
 
@@ -214,82 +215,82 @@ describe('Uint8ArrayReader', () => {
       {
         method: 'readInt64BE',
         offset: 0,
-        expected: BigInt(-1),
+        expected: bigInt(-1),
       },
       {
         method: 'readInt64LE',
         offset: 0,
-        expected: BigInt(-1),
+        expected: bigInt(-1),
       },
       {
         method: 'readUInt64BE',
         offset: 0,
-        expected: BigInt('18446744073709551615'),
+        expected: bigInt('18446744073709551615'),
       },
       {
         method: 'readUInt64LE',
         offset: 0,
-        expected: BigInt('18446744073709551615'),
+        expected: bigInt('18446744073709551615'),
       },
       {
         method: 'readInt64BE',
         offset: 7,
-        expected: BigInt('-72057594037927936'),
+        expected: bigInt('-72057594037927936'),
       },
       {
         method: 'readInt64LE',
         offset: 7,
-        expected: BigInt(255),
+        expected: bigInt(255),
       },
       {
         method: 'readUInt64BE',
         offset: 7,
-        expected: BigInt('18374686479671623680'),
+        expected: bigInt('18374686479671623680'),
       },
       {
         method: 'readUInt64LE',
         offset: 7,
-        expected: BigInt(255),
+        expected: bigInt(255),
       },
       {
         method: 'readInt64BE',
         offset: 8,
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         method: 'readInt64LE',
         offset: 8,
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         method: 'readUInt64BE',
         offset: 8,
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         method: 'readUInt64LE',
         offset: 8,
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         method: 'readInt64BE',
         offset: 16,
-        expected: BigInt('-1107640670486659072'),
+        expected: bigInt('-1107640670486659072'),
       },
       {
         method: 'readInt64LE',
         offset: 16,
-        expected: BigInt('244919132135664'),
+        expected: bigInt('244919132135664'),
       },
       {
         method: 'readUInt64BE',
         offset: 16,
-        expected: BigInt('17339103403222892544'),
+        expected: bigInt('17339103403222892544'),
       },
       {
         method: 'readUInt64LE',
         offset: 16,
-        expected: BigInt('244919132135664'),
+        expected: bigInt('244919132135664'),
       },
     ];
 
@@ -347,19 +348,19 @@ describe('Uint8ArrayReader', () => {
         bytes: Uint8Array.from([
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ]),
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         bytes: Uint8Array.from([
           0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         ]),
-        expected: BigInt(-1),
+        expected: bigInt(-1),
       },
       {
         bytes: Uint8Array.from([
           0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
         ]),
-        expected: BigInt('72340172838076673'),
+        expected: bigInt('72340172838076673'),
       },
     ])('toInt64LE %s', ({bytes, expected}) => {
       const result = Uint8ArrayReader.toInt64LE(bytes);
@@ -372,19 +373,19 @@ describe('Uint8ArrayReader', () => {
         bytes: Uint8Array.from([
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ]),
-        expected: BigInt(0),
+        expected: bigInt(0),
       },
       {
         bytes: Uint8Array.from([
           0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         ]),
-        expected: BigInt('18446744073709551615'),
+        expected: bigInt('18446744073709551615'),
       },
       {
         bytes: Uint8Array.from([
           0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
         ]),
-        expected: BigInt('72340172838076673'),
+        expected: bigInt('72340172838076673'),
       },
     ])('toUInt64LE %s', ({bytes, expected}) => {
       const result = Uint8ArrayReader.toUInt64LE(bytes);

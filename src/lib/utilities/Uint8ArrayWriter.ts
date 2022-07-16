@@ -1,6 +1,7 @@
 /* eslint-disable no-bitwise */
 
 import {toByteArray} from 'base64-js';
+import {BigInteger} from 'big-integer';
 
 export default class Uint8ArrayWriter {
   private readonly bytes: Uint8Array;
@@ -18,7 +19,7 @@ export default class Uint8ArrayWriter {
     return result;
   }
 
-  static fromUInt64LE(data: bigint): Uint8Array {
+  static fromUInt64LE(data: BigInteger): Uint8Array {
     const writer = new Uint8ArrayWriter(new Uint8Array(8));
     writer.writeUInt64LE(data, 0);
     return writer.slice();
@@ -32,8 +33,8 @@ export default class Uint8ArrayWriter {
     return this.bytes.slice(start, end);
   }
 
-  writeUInt64BE(value: bigint, offset: number) {
-    let lo = Number(value & 0xffffffffn);
+  writeUInt64BE(value: BigInteger, offset: number) {
+    let lo = Number(value.and(0xffffffff));
     this.bytes[offset + 7] = lo;
     lo = lo >> 8;
     this.bytes[offset + 6] = lo;
@@ -42,7 +43,7 @@ export default class Uint8ArrayWriter {
     lo = lo >> 8;
     this.bytes[offset + 4] = lo;
 
-    let hi = Number((value >> 32n) & 0xffffffffn);
+    let hi = Number(value.shiftRight(32).and(0xffffffff));
     this.bytes[offset + 3] = hi;
     hi = hi >> 8;
     this.bytes[offset + 2] = hi;
@@ -54,8 +55,8 @@ export default class Uint8ArrayWriter {
     return offset + 8;
   }
 
-  writeUInt64LE(value: bigint, offset: number) {
-    let lo = Number(value & 0xffffffffn);
+  writeUInt64LE(value: BigInteger, offset: number) {
+    let lo = Number(value.and(0xffffffff));
     this.bytes[offset++] = lo;
     lo = lo >> 8;
     this.bytes[offset++] = lo;
@@ -64,7 +65,7 @@ export default class Uint8ArrayWriter {
     lo = lo >> 8;
     this.bytes[offset++] = lo;
 
-    let hi = Number((value >> 32n) & 0xffffffffn);
+    let hi = Number(value.shiftRight(32).and(0xffffffff));
     this.bytes[offset++] = hi;
     hi = hi >> 8;
     this.bytes[offset++] = hi;

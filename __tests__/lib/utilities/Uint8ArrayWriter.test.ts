@@ -1,14 +1,15 @@
 import Uint8ArrayWriter from '../../../src/lib/utilities/Uint8ArrayWriter';
+import bigInt, {BigInteger} from 'big-integer';
 
 describe('Uint8ArrayWriter', () => {
   describe('write*', () => {
     type TestCase = {
       method: keyof Uint8ArrayWriter;
-      value: number | bigint;
+      value: number | BigInteger;
       size: number;
       offset: number;
       expectedArray: Uint8Array;
-      expectedResult: number | bigint;
+      expectedResult: number | BigInteger;
     };
 
     const cases: TestCase[] = [
@@ -16,7 +17,7 @@ describe('Uint8ArrayWriter', () => {
         method: 'writeUInt64BE',
         size: 8,
         offset: 0,
-        value: BigInt('17339103403222892544'),
+        value: bigInt('17339103403222892544'),
         expectedArray: Uint8Array.from([
           0xf0, 0xa0, 0xde, 0xad, 0xc0, 0xde, 0x00, 0x00,
         ]),
@@ -26,7 +27,7 @@ describe('Uint8ArrayWriter', () => {
         method: 'writeUInt64LE',
         size: 8,
         offset: 0,
-        value: BigInt('244919132135664'),
+        value: bigInt('244919132135664'),
         expectedArray: Uint8Array.from([
           0xf0, 0xa0, 0xde, 0xad, 0xc0, 0xde, 0x00, 0x00,
         ]),
@@ -67,19 +68,19 @@ describe('Uint8ArrayWriter', () => {
 
     it.each([
       {
-        input: BigInt('18446744073709551615'),
+        input: bigInt('18446744073709551615'),
         expected: Uint8Array.from([
           0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         ]),
       },
       {
-        input: BigInt('72340172838076673'),
+        input: bigInt('72340172838076673'),
         expected: Uint8Array.from([
           0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
         ]),
       },
       {
-        input: BigInt(0),
+        input: bigInt(0),
         expected: Uint8Array.from([
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         ]),

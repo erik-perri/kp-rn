@@ -2,11 +2,12 @@ import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import bigInt, {BigInteger} from 'big-integer';
 
-export const UINT64_MAX = BigInt('0xffffffffffffffff');
+export const UINT64_MAX = bigInt('18446744073709551615'); // 0xffffffffffffffff
 
 export default class HmacBlockStream {
-  private blockIndex: bigint = BigInt(0);
+  private blockIndex: BigInteger = bigInt(0);
   private atEof: boolean = false;
   private buffer: Uint8Array = new Uint8Array(0);
 
@@ -62,7 +63,7 @@ export default class HmacBlockStream {
     }
 
     // m_bufferPos = 0;
-    this.blockIndex++;
+    this.blockIndex = this.blockIndex.add(1);
 
     if (blockSize === 0) {
       this.atEof = true;
@@ -73,7 +74,7 @@ export default class HmacBlockStream {
   }
 
   public reset(): void {
-    this.blockIndex = BigInt(0);
+    this.blockIndex = bigInt(0);
     this.reader.offset = 0;
     this.atEof = false;
   }
@@ -86,7 +87,10 @@ export default class HmacBlockStream {
     return HmacBlockStream.getHmacKey(this.blockIndex, this.key);
   }
 
-  public static getHmacKey(blockIndex: bigint, key: Uint8Array): Uint8Array {
+  public static getHmacKey(
+    blockIndex: BigInteger,
+    key: Uint8Array,
+  ): Uint8Array {
     if (key.byteLength !== 64) {
       throw new Error('Unexpected key length');
     }
