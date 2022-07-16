@@ -7,10 +7,13 @@ import HmacBlockStream, {
 } from '../../../src/lib/streams/HmacBlockStream';
 
 describe('CryptoHash', () => {
-  it('hmac hashes as expected', () => {
-    const result = CryptoHash.hmac(
+  it('hmac hashes as expected', async () => {
+    const result = await CryptoHash.hmac(
       sampleAes256AesKdfKdbx4.headerData,
-      HmacBlockStream.getHmacKey(UINT64_MAX, sampleAes256AesKdfKdbx4.hmacKey),
+      await HmacBlockStream.getHmacKey(
+        UINT64_MAX,
+        sampleAes256AesKdfKdbx4.hmacKey,
+      ),
       CryptoHashAlgorithm.Sha256,
     );
 

@@ -14,20 +14,18 @@ export default class CompositeKey extends Key {
     return this.keys.length > 0;
   }
 
-  getRawKey(transformSeed?: Uint8Array): Uint8Array {
-    const hash = new CryptoHash(CryptoHashAlgorithm.Sha256);
-
-    for (const key of this.keys) {
-      hash.addData(key.getRawKey());
-    }
+  async getRawKey(transformSeed?: Uint8Array): Promise<Uint8Array> {
+    const hashData: Uint8Array[] = await Promise.all(
+      this.keys.map(key => key.getRawKey()),
+    );
 
     if (transformSeed) {
       const challengeResult = this.challenge(transformSeed);
 
-      hash.addData(challengeResult);
+      hashData.push(challengeResult);
     }
 
-    return hash.result();
+    return await CryptoHash.hash(hashData, CryptoHashAlgorithm.Sha256);
   }
 
   setRawKey(data: Uint8Array): void {
@@ -49,7 +47,7 @@ export default class CompositeKey extends Key {
   async transform(kdf: Kdf): Promise<Uint8Array> {
     if (kdf.uuid === KDF_AES_KDBX3) {
       // legacy KDBX3 AES-KDF, challenge response is added later to the hash
-      return await kdf.transform(this.getRawKey());
+      return await kdf.transform(await this.getRawKey());
     }
 
     const seed = kdf.getSeed();
@@ -57,6 +55,8 @@ export default class CompositeKey extends Key {
       throw new Error('Seed empty');
     }
 
-    return await kdf.transform(this.getRawKey(seed));
+    const rawKey = await this.getRawKey(seed);
+
+    return await kdf.transform(rawKey);
   }
 }

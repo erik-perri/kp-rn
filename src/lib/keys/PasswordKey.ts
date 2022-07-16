@@ -7,15 +7,20 @@ export default class PasswordKey extends Key {
   public static readonly UUID = '77e90411-303a-43f2-b773-853b05635ead';
   private rawKey: Uint8Array | undefined;
 
-  constructor(private readonly password?: string) {
+  constructor() {
     super(PasswordKey.UUID);
-
-    if (password !== undefined) {
-      this.setPassword(password);
-    }
   }
 
-  getRawKey(): Uint8Array {
+  async setPassword(password: string) {
+    this.setRawKey(
+      await CryptoHash.hash(
+        Uint8ArrayWriter.fromString(password),
+        CryptoHashAlgorithm.Sha256,
+      ),
+    );
+  }
+
+  async getRawKey(): Promise<Uint8Array> {
     return this.rawKey ?? new Uint8Array(0);
   }
 
@@ -32,14 +37,5 @@ export default class PasswordKey extends Key {
 
   serialize(): Uint8Array {
     throw new Error('Not implemented');
-  }
-
-  private setPassword(password: string) {
-    this.setRawKey(
-      CryptoHash.hash(
-        Uint8ArrayWriter.fromString(password),
-        CryptoHashAlgorithm.Sha256,
-      ),
-    );
   }
 }

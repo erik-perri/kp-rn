@@ -23,7 +23,7 @@ export default class HmacBlockStream {
     return this.buffer;
   }
 
-  readHashedBlock(): boolean {
+  async readHashedBlock(): Promise<boolean> {
     if (this.atEof) {
       return false;
     }
@@ -50,15 +50,17 @@ export default class HmacBlockStream {
       );
     }
 
-    const hash = new CryptoHash(
+    const hash = await CryptoHash.hmac(
+      [
+        Uint8ArrayWriter.fromUInt64LE(this.blockIndex),
+        blockSizeBytes,
+        this.buffer,
+      ],
+      await this.getCurrentHmacKey(),
       CryptoHashAlgorithm.Sha256,
-      this.getCurrentHmacKey(),
     );
-    hash.addData(Uint8ArrayWriter.fromUInt64LE(this.blockIndex));
-    hash.addData(blockSizeBytes);
-    hash.addData(this.buffer);
 
-    if (!Uint8ArrayReader.equals(hmac, hash.result())) {
+    if (!Uint8ArrayReader.equals(hmac, hash)) {
       throw new Error('Mismatch between hash and data.');
     }
 
@@ -83,21 +85,21 @@ export default class HmacBlockStream {
     return this.atEof;
   }
 
-  private getCurrentHmacKey() {
-    return HmacBlockStream.getHmacKey(this.blockIndex, this.key);
+  private async getCurrentHmacKey() {
+    return await HmacBlockStream.getHmacKey(this.blockIndex, this.key);
   }
 
-  public static getHmacKey(
+  public static async getHmacKey(
     blockIndex: BigInteger,
     key: Uint8Array,
-  ): Uint8Array {
+  ): Promise<Uint8Array> {
     if (key.byteLength !== 64) {
       throw new Error('Unexpected key length');
     }
 
-    const hash = new CryptoHash(CryptoHashAlgorithm.Sha512);
-    hash.addData(Uint8ArrayWriter.fromUInt64LE(blockIndex));
-    hash.addData(key);
-    return hash.result();
+    return CryptoHash.hash(
+      [Uint8ArrayWriter.fromUInt64LE(blockIndex), key],
+      CryptoHashAlgorithm.Sha512,
+    );
   }
 }

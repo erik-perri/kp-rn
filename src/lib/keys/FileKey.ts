@@ -20,7 +20,7 @@ export default class FileKey extends Key {
     super(FileKey.UUID);
   }
 
-  load(data: Uint8Array): boolean {
+  async load(data: Uint8Array): Promise<boolean> {
     this.type = FileKeyType.None;
 
     if (!data.byteLength) {
@@ -30,21 +30,19 @@ export default class FileKey extends Key {
     // TODO Determine type base on file structure, only falling back to hash
     //      if unknown structure.
 
-    return this.loadHashed(data);
+    return await this.loadHashed(data);
   }
 
-  private loadHashed(data: Uint8Array): boolean {
-    const cryptoHash = new CryptoHash(CryptoHashAlgorithm.Sha256);
+  private async loadHashed(data: Uint8Array): Promise<boolean> {
+    const hashed = await CryptoHash.hash([data], CryptoHashAlgorithm.Sha256);
 
-    cryptoHash.addData(data);
-
-    this.setRawKey(cryptoHash.result());
+    this.setRawKey(hashed);
     this.type = FileKeyType.Hashed;
 
     return true;
   }
 
-  getRawKey(): Uint8Array {
+  async getRawKey(): Promise<Uint8Array> {
     return this.rawKey ?? new Uint8Array(0);
   }
 

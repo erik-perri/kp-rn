@@ -41,15 +41,14 @@ export const KDFPARAM_ARGON2_VERSION = 'V';
 export const KDFPARAM_ARGON2_SECRET = 'K';
 export const KDFPARAM_ARGON2_ASSOCDATA = 'A';
 
-export function hmacKey(
+export async function hmacKey(
   masterSeed: Uint8Array,
   transformedMasterKey: Uint8Array,
-): Uint8Array {
-  const hmacKeyHash = new CryptoHash(CryptoHashAlgorithm.Sha512);
-  hmacKeyHash.addData(masterSeed);
-  hmacKeyHash.addData(transformedMasterKey);
-  hmacKeyHash.addData(Uint8Array.from([0x01]));
-  return hmacKeyHash.result();
+): Promise<Uint8Array> {
+  return await CryptoHash.hash(
+    [masterSeed, transformedMasterKey, Uint8Array.from([0x01])],
+    CryptoHashAlgorithm.Sha512,
+  );
 }
 
 function uuidToKdf(uuid: string): Kdf | undefined {

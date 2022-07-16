@@ -11,12 +11,12 @@ export default class KeePass2RandomStream {
     //
   }
 
-  init(mode: SymmetricCipherMode, key: Uint8Array): void {
+  async init(mode: SymmetricCipherMode, key: Uint8Array): Promise<void> {
     switch (mode) {
       case SymmetricCipherMode.Salsa20:
         throw new Error('Not implemented');
       case SymmetricCipherMode.ChaCha20: {
-        const keyIv = CryptoHash.hash(key, CryptoHashAlgorithm.Sha512);
+        const keyIv = await CryptoHash.hash(key, CryptoHashAlgorithm.Sha512);
         this.cipher.init(
           SymmetricCipherMode.ChaCha20,
           SymmetricCipherDirection.Encrypt,

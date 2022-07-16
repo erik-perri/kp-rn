@@ -1,5 +1,8 @@
 package com.keepassrn;
 
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
@@ -10,6 +13,10 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
+
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class KpHelperModule extends ReactContextBaseJavaModule {
     KpHelperModule(ReactApplicationContext context) {
@@ -52,12 +59,41 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
 
             byte[] transformedBytes = KpHelper.transformAesKdfKey(keyBytes, seedBytes, (int) iterations);
 
-            WritableArray result = new WritableNativeArray();
-            for (byte b : transformedBytes) {
-                result.pushInt(b);
+            promise.resolve(getArrayFromBytes(transformedBytes));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void createHash(ReadableArray data, double algorithm, Promise promise) {
+        try {
+            KpHelper.startHash((int) algorithm);
+
+            for (int i = 0; i < data.size(); i++) {
+                KpHelper.continueHash(getBytesFromArray(data.getArray(i)));
             }
 
-            promise.resolve(result);
+            byte[] hash = KpHelper.finishHash();
+
+            promise.resolve(getArrayFromBytes(hash));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void createHmac(ReadableArray key, ReadableArray data, double algorithm, Promise promise) {
+        try {
+            KpHelper.startHmac((int) algorithm, getBytesFromArray(key));
+
+            for (int i = 0; i < data.size(); i++) {
+                KpHelper.continueHmac(getBytesFromArray(data.getArray(i)));
+            }
+
+            byte[] hmac = KpHelper.finishHmac();
+
+            promise.resolve(getArrayFromBytes(hmac));
         } catch (Exception e) {
             promise.reject(e);
         }
@@ -74,6 +110,16 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             }
 
             result[i] = (byte) array.getInt(i);
+        }
+
+        return result;
+    }
+
+    private WritableArray getArrayFromBytes(byte[] bytes) {
+        WritableArray result = new WritableNativeArray();
+
+        for (byte b : bytes) {
+            result.pushInt(b);
         }
 
         return result;

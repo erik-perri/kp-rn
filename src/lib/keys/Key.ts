@@ -3,7 +3,7 @@ export abstract class Key {
     //
   }
 
-  public abstract getRawKey(): Uint8Array;
+  public abstract getRawKey(): Promise<Uint8Array>;
   public abstract setRawKey(data: Uint8Array): void;
   public abstract serialize(): Uint8Array;
   public abstract deserialize(data: Uint8Array): void;

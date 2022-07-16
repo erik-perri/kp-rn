@@ -75,13 +75,13 @@ export class Database {
     let oldTransformedDatabaseKey = new PasswordKey();
     if (!this.data.key.isEmpty) {
       oldTransformedDatabaseKey.setRawKey(
-        this.data.transformedDatabaseKey.getRawKey(),
+        await this.data.transformedDatabaseKey.getRawKey(),
       );
     }
 
     let transformedDatabaseKey: Uint8Array;
     if (!transformKey) {
-      transformedDatabaseKey = oldTransformedDatabaseKey.getRawKey();
+      transformedDatabaseKey = await oldTransformedDatabaseKey.getRawKey();
     } else {
       transformedDatabaseKey = await key.transform(this.data.kdf);
     }
@@ -101,7 +101,7 @@ export class Database {
     return true;
   }
 
-  getTransformedDatabaseKey(): Uint8Array {
-    return this.data.transformedDatabaseKey.getRawKey();
+  async getTransformedDatabaseKey(): Promise<Uint8Array> {
+    return await this.data.transformedDatabaseKey.getRawKey();
   }
 }

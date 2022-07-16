@@ -242,10 +242,10 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('Unable to calculate database key');
     }
 
-    const hash = new CryptoHash(CryptoHashAlgorithm.Sha256);
-    hash.addData(this.getMasterSeed());
-    hash.addData(database.getTransformedDatabaseKey());
-    const finalKey = hash.result();
+    const finalKey = await CryptoHash.hash(
+      [this.getMasterSeed(), await database.getTransformedDatabaseKey()],
+      CryptoHashAlgorithm.Sha256,
+    );
 
     const headerSha256 = reader.readBytes(32);
     const headerHmac = reader.readBytes(32);
@@ -255,28 +255,28 @@ export default class Kdbx4Reader extends KdbxReader {
     if (
       !Uint8ArrayReader.equals(
         headerSha256,
-        CryptoHash.hash(headerData, CryptoHashAlgorithm.Sha256),
+        await CryptoHash.hash(headerData, CryptoHashAlgorithm.Sha256),
       )
     ) {
       throw new Error('Header SHA256 mismatch');
     }
 
-    const hmacKey = keepass2HmacKey(
+    const hmacKey = await keepass2HmacKey(
       this.getMasterSeed(),
-      database.getTransformedDatabaseKey(),
+      await database.getTransformedDatabaseKey(),
     );
 
     if (
       !Uint8ArrayReader.equals(
         headerHmac,
-        CryptoHash.hmac(
+        await CryptoHash.hmac(
           headerData,
-          HmacBlockStream.getHmacKey(UINT64_MAX, hmacKey),
+          await HmacBlockStream.getHmacKey(UINT64_MAX, hmacKey),
           CryptoHashAlgorithm.Sha256,
         ),
       )
     ) {
-      throw new Error('HMAC mismatch');
+      throw new Error('HMAC mismatch (Invalid credentials?)');
     }
 
     const stream = new HmacBlockStream(
@@ -286,7 +286,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
     let readBytes = new Uint8Array(0);
 
-    while (stream.readHashedBlock()) {
+    while (await stream.readHashedBlock()) {
       const cipher = crypto
         .createDecipheriv('aes-256-cbc', finalKey, this.getEncryptionIV())
         .setAutoPadding(true);
@@ -310,7 +310,7 @@ export default class Kdbx4Reader extends KdbxReader {
     }
 
     const randomStream = new KeePass2RandomStream();
-    randomStream.init(
+    await randomStream.init(
       this.getSymmetricCipherMode(),
       this.getProtectedStreamKey(),
     );

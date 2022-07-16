@@ -1,7 +1,8 @@
-import {HelperModule} from '../src/lib/utilities/KpHelperModule';
+import {NativeHelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
+import {CryptoHashAlgorithm} from '../src/lib/crypto/CryptoHash';
 
-const KpHelperModuleMock: HelperModule = {
+const KpHelperModuleMock: NativeHelperModule = {
   readFile: jest.fn().mockResolvedValue([]),
   transformAesKdfKey: jest
     .fn<
@@ -23,6 +24,29 @@ const KpHelperModuleMock: HelperModule = {
       }
 
       return Promise.resolve([...result.values()]);
+    }),
+  createHash: jest
+    .fn<Promise<number[]>, [number[][], CryptoHashAlgorithm]>()
+    .mockImplementation(async (data, algorithm) => {
+      const hash = crypto.createHash(
+        algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
+      );
+
+      data.forEach(datum => hash.update(Uint8Array.from(datum)));
+
+      return [...hash.digest().values()];
+    }),
+  createHmac: jest
+    .fn<Promise<number[]>, [number[], number[][], CryptoHashAlgorithm]>()
+    .mockImplementation(async (key, data, algorithm) => {
+      const hmac = crypto.createHmac(
+        algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
+        Uint8Array.from(key),
+      );
+
+      data.forEach(datum => hmac.update(Uint8Array.from(datum)));
+
+      return [...hmac.digest().values()];
     }),
 };
 
