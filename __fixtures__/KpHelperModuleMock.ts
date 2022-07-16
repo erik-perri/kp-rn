@@ -1,14 +1,11 @@
-import {NativeHelperModule} from '../src/lib/utilities/KpHelperModule';
+import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
 import {CryptoHashAlgorithm} from '../src/lib/crypto/CryptoHash';
 
-const KpHelperModuleMock: NativeHelperModule = {
+const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
   readFile: jest.fn().mockResolvedValue([]),
   transformAesKdfKey: jest
-    .fn<
-      Promise<number[]>,
-      [Uint8Array | number[], Uint8Array | number[], number]
-    >()
+    .fn<Promise<Uint8Array>, [Uint8Array, Uint8Array, number]>()
     .mockImplementation(async (key, seed, rounds) => {
       let result = Uint8Array.from(key);
 
@@ -23,30 +20,30 @@ const KpHelperModuleMock: NativeHelperModule = {
         result = Buffer.concat([cipher.update(result), cipher.final()]);
       }
 
-      return Promise.resolve([...result.values()]);
+      return result;
     }),
   createHash: jest
-    .fn<Promise<number[]>, [number[][], CryptoHashAlgorithm]>()
+    .fn<Promise<Uint8Array>, [Uint8Array[], CryptoHashAlgorithm]>()
     .mockImplementation(async (data, algorithm) => {
       const hash = crypto.createHash(
         algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
       );
 
-      data.forEach(datum => hash.update(Uint8Array.from(datum)));
+      data.forEach(datum => hash.update(datum));
 
-      return [...hash.digest().values()];
+      return hash.digest();
     }),
   createHmac: jest
-    .fn<Promise<number[]>, [number[], number[][], CryptoHashAlgorithm]>()
+    .fn<Promise<Uint8Array>, [Uint8Array, Uint8Array[], CryptoHashAlgorithm]>()
     .mockImplementation(async (key, data, algorithm) => {
       const hmac = crypto.createHmac(
         algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
         Uint8Array.from(key),
       );
 
-      data.forEach(datum => hmac.update(Uint8Array.from(datum)));
+      data.forEach(datum => hmac.update(datum));
 
-      return [...hmac.digest().values()];
+      return hmac.digest();
     }),
 };
 
