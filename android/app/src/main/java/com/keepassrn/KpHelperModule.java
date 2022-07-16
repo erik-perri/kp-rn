@@ -23,6 +23,28 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void readFile(String uri, Promise promise) {
+        try {
+            ParcelFileDescriptor parcelDescriptor = getReactApplicationContext()
+                    .getContentResolver()
+                    .openFileDescriptor(Uri.parse(uri), "r");
+
+            int dataSize = (int) parcelDescriptor.getStatSize();
+            byte[] data = new byte[dataSize];
+
+            FileDescriptor fileDescriptor = parcelDescriptor.getFileDescriptor();
+            FileInputStream fileStream = new FileInputStream(fileDescriptor);
+
+            int readBytes = fileStream.read(data);
+            assert readBytes == dataSize;
+
+            promise.resolve(getArrayFromBytes(data));
+        } catch (IOException | AssertionError e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
     public void transformAesKdfKey(ReadableArray key, ReadableArray seed, double iterations, Promise promise) {
         try {
             byte[] keyBytes = getBytesFromArray(key);

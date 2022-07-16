@@ -8,6 +8,8 @@ export interface HelperModule {
     seed: Uint8Array | number[],
     iterations: number,
   ): Promise<number[]>;
+
+  readFile(file: string): Promise<number[]>;
 }
 
 export default KpHelperModule as HelperModule;
