@@ -1,6 +1,7 @@
 import {Key} from './Key';
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import {SHA256_SIZE} from '../utilities/sizes';
+import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 
 export default class PasswordKey extends Key {
   public static readonly UUID = '77e90411-303a-43f2-b773-853b05635ead';
@@ -36,7 +37,7 @@ export default class PasswordKey extends Key {
   private setPassword(password: string) {
     this.setRawKey(
       CryptoHash.hash(
-        Buffer.from(password, 'utf-8'),
+        Uint8ArrayWriter.fromString(password),
         CryptoHashAlgorithm.Sha256,
       ),
     );

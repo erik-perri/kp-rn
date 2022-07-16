@@ -1,9 +1,9 @@
 import KdbxReader from './KdbxReader';
 import {CompressionAlgorithm, Database} from '../core/Database';
-import {BufferReader} from '../utilities/BufferReader';
+import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import CompositeKey from '../keys/CompositeKey';
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
-import {areUint8ArraysEqual} from '../utilities/Uint8Array';
 import {
   FILE_VERSION_4,
   FILE_VERSION_CRITICAL_MASK,
@@ -20,21 +20,24 @@ import {
   VariantMapFieldType,
 } from './Keepass2';
 import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
-import * as crypto from 'crypto';
-import {gunzip} from '../utilities/zlib';
 import KdbxXmlReader from './KdbxXmlReader';
 import KeePass2RandomStream from './KeePass2RandomStream';
+import {gunzip} from '../utilities/zlib';
+import * as crypto from 'crypto';
 
 export default class Kdbx4Reader extends KdbxReader {
   private binaryPool: Record<string, Uint8Array> = {};
 
-  protected readHeaderField(reader: BufferReader, database: Database): boolean {
+  protected readHeaderField(
+    reader: Uint8ArrayCursorReader,
+    database: Database,
+  ): boolean {
     const fieldId = reader.readInt8();
     if (!toHeaderFieldId(fieldId)) {
       throw new Error('Invalid header id size');
     }
 
-    const fieldLen = reader.readUInt32LE(4);
+    const fieldLen = reader.readUInt32LE();
     if (!fieldLen) {
       throw new Error(
         `Invalid header field length: field ${HeaderFieldId[fieldId]}`,
@@ -72,7 +75,10 @@ export default class Kdbx4Reader extends KdbxReader {
         break;
 
       case HeaderFieldId.KdfParameters: {
-        const kdfReader = new BufferReader(Buffer.from(fieldData), 0);
+        const kdfReader = new Uint8ArrayCursorReader(
+          new Uint8ArrayReader(fieldData),
+          0,
+        );
         const kdfParams = this.readVariantMap(kdfReader);
 
         const kdf = kdfFromParameters(kdfParams);
@@ -88,7 +94,9 @@ export default class Kdbx4Reader extends KdbxReader {
 
       case HeaderFieldId.PublicCustomData: {
         database.setPublicCustomData(
-          this.readVariantMap(new BufferReader(Buffer.from(fieldData), 0)),
+          this.readVariantMap(
+            new Uint8ArrayCursorReader(new Uint8ArrayReader(fieldData), 0),
+          ),
         );
         break;
       }
@@ -108,7 +116,7 @@ export default class Kdbx4Reader extends KdbxReader {
     return true;
   }
 
-  private readVariantMap(reader: BufferReader): VariantFieldMap {
+  private readVariantMap(reader: Uint8ArrayCursorReader): VariantFieldMap {
     // eslint-disable-next-line no-bitwise
     const version = reader.readUInt16LE() & VARIANTMAP_CRITICAL_MASK;
 
@@ -130,7 +138,7 @@ export default class Kdbx4Reader extends KdbxReader {
         break;
       }
 
-      const nameLen = reader.readUInt32LE(4);
+      const nameLen = reader.readUInt32LE();
       let nameBytes = new Uint8Array(0);
       if (nameLen) {
         nameBytes = reader.readBytes(nameLen);
@@ -140,7 +148,7 @@ export default class Kdbx4Reader extends KdbxReader {
       }
       const name = String.fromCharCode(...nameBytes);
 
-      const valueLen = reader.readUInt32LE(4);
+      const valueLen = reader.readUInt32LE();
       let valueBytes = new Uint8Array(0);
       if (valueLen) {
         valueBytes = reader.readBytes(valueLen);
@@ -160,7 +168,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
         case VariantMapFieldType.Int32:
           if (valueLen === 4) {
-            map[name] = new DataView(valueBytes.buffer).getInt32(0, true);
+            map[name] = Uint8ArrayReader.toInt32LE(valueBytes);
           } else {
             throw new Error('Invalid variant map Int32 entry value length');
           }
@@ -168,7 +176,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
         case VariantMapFieldType.UInt32:
           if (valueLen === 4) {
-            map[name] = new DataView(valueBytes.buffer).getUint32(0, true);
+            map[name] = Uint8ArrayReader.toUInt32LE(valueBytes);
           } else {
             throw new Error('Invalid variant map UInt32 entry value length');
           }
@@ -176,7 +184,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
         case VariantMapFieldType.Int64:
           if (valueLen === 8) {
-            map[name] = new DataView(valueBytes.buffer).getBigInt64(0, true);
+            map[name] = Uint8ArrayReader.toInt64LE(valueBytes);
           } else {
             throw new Error('Invalid variant map Int64 entry value length');
           }
@@ -184,7 +192,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
         case VariantMapFieldType.UInt64:
           if (valueLen === 8) {
-            map[name] = new DataView(valueBytes.buffer).getBigUint64(0, true);
+            map[name] = Uint8ArrayReader.toUInt64LE(valueBytes);
           } else {
             throw new Error('Invalid variant map UInt64 entry value length');
           }
@@ -207,7 +215,7 @@ export default class Kdbx4Reader extends KdbxReader {
   }
 
   protected async readVersionDatabase(
-    reader: BufferReader,
+    reader: Uint8ArrayCursorReader,
     headerData: Uint8Array,
     key: CompositeKey,
     database: Database,
@@ -245,7 +253,7 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error('Invalid header checksum size');
     }
     if (
-      !areUint8ArraysEqual(
+      !Uint8ArrayReader.equals(
         headerSha256,
         CryptoHash.hash(headerData, CryptoHashAlgorithm.Sha256),
       )
@@ -259,7 +267,7 @@ export default class Kdbx4Reader extends KdbxReader {
     );
 
     if (
-      !areUint8ArraysEqual(
+      !Uint8ArrayReader.equals(
         headerHmac,
         CryptoHash.hmac(
           headerData,
@@ -272,23 +280,20 @@ export default class Kdbx4Reader extends KdbxReader {
     }
 
     const stream = new HmacBlockStream(
-      new BufferReader(Buffer.from(reader.subarray())),
+      new Uint8ArrayCursorReader(new Uint8ArrayReader(reader.slice())),
       hmacKey,
     );
 
-    let readBytes = Buffer.alloc(0);
+    let readBytes = new Uint8Array(0);
 
     while (stream.readHashedBlock()) {
       const cipher = crypto
         .createDecipheriv('aes-256-cbc', finalKey, this.getEncryptionIV())
         .setAutoPadding(true);
 
-      const result = Buffer.concat([
-        cipher.update(stream.getBuffer()),
-        cipher.final(),
-      ]);
+      const result = [...cipher.update(stream.getBuffer()), ...cipher.final()];
 
-      readBytes = Buffer.concat([readBytes, result]);
+      readBytes = Uint8Array.from([...readBytes, ...result]);
     }
 
     const isCompressed =
@@ -296,7 +301,9 @@ export default class Kdbx4Reader extends KdbxReader {
       CompressionAlgorithm.CompressionGZip;
 
     const buffer = isCompressed ? await gunzip(readBytes) : readBytes;
-    const bufferReader = new BufferReader(buffer);
+    const bufferReader = new Uint8ArrayCursorReader(
+      new Uint8ArrayReader(buffer),
+    );
 
     while (this.readInnerHeaderField(bufferReader)) {
       //
@@ -309,20 +316,20 @@ export default class Kdbx4Reader extends KdbxReader {
     );
 
     const xmlReader = new KdbxXmlReader(FILE_VERSION_4, this.binaryPool);
-    const remaining = bufferReader.subarray();
+    const remaining = bufferReader.slice();
 
     await xmlReader.readDatabase(remaining, database, randomStream);
 
     return database;
   }
 
-  protected readInnerHeaderField(reader: BufferReader): boolean {
+  protected readInnerHeaderField(reader: Uint8ArrayCursorReader): boolean {
     const fieldId = reader.readInt8();
     if (!toInnerHeaderFieldId(fieldId)) {
       throw new Error('Invalid inner header id size');
     }
 
-    const fieldLen = reader.readUInt32LE(4);
+    const fieldLen = reader.readUInt32LE();
 
     if (fieldId === InnerHeaderFieldId.End) {
       return false;

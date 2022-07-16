@@ -1,9 +1,7 @@
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
-import {BufferReader} from '../utilities/BufferReader';
-import {
-  areUint8ArraysEqual,
-  makeUint8ArrayFromUint64,
-} from '../utilities/Uint8Array';
+import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
+import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 
 export const UINT64_MAX = BigInt('0xffffffffffffffff');
 
@@ -13,7 +11,7 @@ export default class HmacBlockStream {
   private buffer: Uint8Array = new Uint8Array(0);
 
   constructor(
-    private readonly reader: BufferReader,
+    private readonly reader: Uint8ArrayCursorReader,
     private readonly key: Uint8Array,
     private readonly blockSize: number = 1024 * 1024,
   ) {
@@ -39,25 +37,27 @@ export default class HmacBlockStream {
       throw new Error('Invalid block size size.');
     }
 
-    const blockSize = new DataView(blockSizeBytes.buffer).getInt32(0, true);
+    const blockSize = Uint8ArrayReader.toInt32LE(blockSizeBytes);
     if (blockSize < 0) {
       throw new Error('Invalid block size.');
     }
 
     this.buffer = this.reader.readBytes(blockSize);
     if (this.buffer.byteLength !== blockSize) {
-      throw new Error('Block too short.');
+      throw new Error(
+        `Block size wrong. Expected ${blockSize}, read ${this.buffer.byteLength}`,
+      );
     }
 
     const hash = new CryptoHash(
       CryptoHashAlgorithm.Sha256,
       this.getCurrentHmacKey(),
     );
-    hash.addData(makeUint8ArrayFromUint64(this.blockIndex));
+    hash.addData(Uint8ArrayWriter.fromUInt64LE(this.blockIndex));
     hash.addData(blockSizeBytes);
     hash.addData(this.buffer);
 
-    if (!areUint8ArraysEqual(hmac, hash.result())) {
+    if (!Uint8ArrayReader.equals(hmac, hash.result())) {
       throw new Error('Mismatch between hash and data.');
     }
 
@@ -92,7 +92,7 @@ export default class HmacBlockStream {
     }
 
     const hash = new CryptoHash(CryptoHashAlgorithm.Sha512);
-    hash.addData(makeUint8ArrayFromUint64(blockIndex));
+    hash.addData(Uint8ArrayWriter.fromUInt64LE(blockIndex));
     hash.addData(key);
     return hash.result();
   }

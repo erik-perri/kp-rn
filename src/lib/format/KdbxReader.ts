@@ -1,10 +1,11 @@
 import {Database, toCompressionAlgorithm} from '../core/Database';
 import {stringify as uuidStringify} from 'uuid';
 import SymmetricCipher, {SymmetricCipherMode} from '../crypto/SymmetricCipher';
-import {BufferReader} from '../utilities/BufferReader';
 import CompositeKey from '../keys/CompositeKey';
 import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
 import {UUID_SIZE} from '../utilities/sizes';
+import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 
 export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;
@@ -13,8 +14,8 @@ export default abstract class KdbxReader {
   private symmetricCipherMode?: SymmetricCipherMode;
   private streamKey?: Uint8Array;
 
-  async readDatabase(buffer: Buffer, key: CompositeKey): Promise<Database> {
-    const reader = new BufferReader(buffer);
+  async readDatabase(bytes: Uint8Array, key: CompositeKey): Promise<Database> {
+    const reader = new Uint8ArrayCursorReader(new Uint8ArrayReader(bytes));
 
     const [signatureOne, signatureTwo, version] =
       KdbxReader.readMagicNumbers(reader);
@@ -29,27 +30,27 @@ export default abstract class KdbxReader {
       //
     }
 
-    const headerData = reader.getReadData();
+    const headerData = reader.processed();
 
     return await this.readVersionDatabase(reader, headerData, key, database);
   }
 
   protected abstract readHeaderField(
-    reader: BufferReader,
+    reader: Uint8ArrayCursorReader,
     database: Database,
   ): boolean;
 
   protected abstract readVersionDatabase(
-    reader: BufferReader,
+    reader: Uint8ArrayCursorReader,
     headerData: Uint8Array,
     key: CompositeKey,
     database: Database,
   ): Promise<Database>;
 
-  private static readMagicNumbers(reader: BufferReader) {
-    const signatureOne = reader.readUInt32LE(4);
-    const signatureTwo = reader.readUInt32LE(4);
-    const version = reader.readUInt32LE(4);
+  private static readMagicNumbers(reader: Uint8ArrayCursorReader) {
+    const signatureOne = reader.readUInt32LE();
+    const signatureTwo = reader.readUInt32LE();
+    const version = reader.readUInt32LE();
 
     return [signatureOne, signatureTwo, version];
   }
@@ -77,7 +78,7 @@ export default abstract class KdbxReader {
       throw new Error('Invalid compression flags length');
     }
 
-    const id = new DataView(data.buffer).getUint32(0, true);
+    const id = Uint8ArrayReader.toUInt32LE(data);
     if (!toCompressionAlgorithm(id)) {
       throw new Error('Unsupported compression algorithm');
     }
@@ -127,7 +128,7 @@ export default abstract class KdbxReader {
       throw new Error('Invalid random stream id size');
     }
 
-    const id = new DataView(data.buffer).getUint32(0, true);
+    const id = Uint8ArrayReader.toUInt32LE(data);
     if (
       !toProtectedStreamAlgo(id) ||
       [
