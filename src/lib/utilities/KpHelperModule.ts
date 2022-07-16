@@ -12,15 +12,12 @@ export interface NativeHelperModule {
 
   readFile(file: string): Promise<number[]>;
 
-  createHash(
-    data: number[][],
-    algorithm: CryptoHashAlgorithm,
-  ): Promise<number[]>;
+  hash(algorithm: CryptoHashAlgorithm, chunks: number[][]): Promise<number[]>;
 
-  createHmac(
-    key: number[],
-    data: number[][],
+  hmac(
     algorithm: CryptoHashAlgorithm,
+    key: number[],
+    chunks: number[][],
   ): Promise<number[]>;
 }
 
@@ -45,28 +42,28 @@ export class LocalHelperModule {
     return Uint8Array.from(await this.module.readFile(file));
   }
 
-  async createHash(
-    data: Uint8Array[],
+  async hash(
     algorithm: CryptoHashAlgorithm,
+    data: Uint8Array[],
   ): Promise<Uint8Array> {
     return Uint8Array.from(
-      await this.module.createHash(
-        data.map(datum => [...datum.values()]),
+      await this.module.hash(
         algorithm,
+        data.map(datum => [...datum.values()]),
       ),
     );
   }
 
-  async createHmac(
+  async hmac(
+    algorithm: CryptoHashAlgorithm,
     key: Uint8Array,
     data: Uint8Array[],
-    algorithm: CryptoHashAlgorithm,
   ): Promise<Uint8Array> {
     return Uint8Array.from(
-      await this.module.createHmac(
+      await this.module.hmac(
+        algorithm,
         [...key.values()],
         data.map(datum => [...datum.values()]),
-        algorithm,
       ),
     );
   }

@@ -22,9 +22,9 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
 
       return result;
     }),
-  createHash: jest
-    .fn<Promise<Uint8Array>, [Uint8Array[], CryptoHashAlgorithm]>()
-    .mockImplementation(async (data, algorithm) => {
+  hash: jest
+    .fn<Promise<Uint8Array>, [CryptoHashAlgorithm, Uint8Array[]]>()
+    .mockImplementation(async (algorithm, data) => {
       const hash = crypto.createHash(
         algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
       );
@@ -33,9 +33,9 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
 
       return hash.digest();
     }),
-  createHmac: jest
-    .fn<Promise<Uint8Array>, [Uint8Array, Uint8Array[], CryptoHashAlgorithm]>()
-    .mockImplementation(async (key, data, algorithm) => {
+  hmac: jest
+    .fn<Promise<Uint8Array>, [CryptoHashAlgorithm, Uint8Array, Uint8Array[]]>()
+    .mockImplementation(async (algorithm, key, data) => {
       const hmac = crypto.createHmac(
         algorithm === CryptoHashAlgorithm.Sha256 ? 'sha256' : 'sha512',
         Uint8Array.from(key),

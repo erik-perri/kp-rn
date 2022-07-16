@@ -28,6 +28,31 @@ jbyteArray convertUIntArrayToJByteArray(
     return result;
 }
 
+secure_vector<byte> convertJByteArrayToVector(
+        JNIEnv *env,
+        jbyteArray array
+) {
+    secure_vector<byte> result;
+
+    int arrayLength = env->GetArrayLength(array);
+    if (arrayLength < 1) {
+        return result;
+    }
+
+    byte *arrayElements = reinterpret_cast<byte *>(env->GetByteArrayElements(array, nullptr));
+    if (arrayElements == nullptr) {
+        return result;
+    }
+
+    result.resize(arrayLength);
+
+    std::copy(arrayElements, arrayElements + arrayLength, result.begin());
+
+    env->ReleaseByteArrayElements(array, reinterpret_cast<jbyte *>(arrayElements), JNI_ABORT);
+
+    return result;
+}
+
 bool SymmetricCipher_aesKdf(
         const secure_vector<byte> &key,
         int rounds,
@@ -54,8 +79,10 @@ bool SymmetricCipher_aesKdf(
     }
 }
 
-std::unique_ptr<HashFunction> hashFunction;
-std::unique_ptr<MessageAuthenticationCode> hmacFunction;
+enum CryptoHashAlgorithm {
+    Sha256,
+    Sha512,
+};
 
 extern "C" {
 
@@ -96,155 +123,93 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
     return nullptr;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_keepassrn_KpHelper_startHash(
+JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hash(
         JNIEnv *env,
-        jclass ,
-        jint algorithm
+        jclass,
+        jint algorithm,
+        jobjectArray chunkArray
 ) {
-    if (hashFunction != nullptr) {
-        return false;
-    }
-
-    switch (algorithm) {
-        case 0:
-            hashFunction = HashFunction::create("SHA-256");
-            break;
-        case 1:
-            hashFunction = HashFunction::create("SHA-512");
-            break;
-        default:
-            return false;
-    }
-
-    return true;
-}
-
-JNIEXPORT jboolean JNICALL Java_com_keepassrn_KpHelper_continueHash(
-        JNIEnv *env,
-        jclass cls,
-        jbyteArray dataArray
-) {
-    if (hashFunction == nullptr) {
-        return false;
-    }
-
-    int dataSize = env->GetArrayLength(dataArray);
-    if (dataSize < 1) {
-        return false;
-    }
-
-    byte *dataElements = reinterpret_cast<byte *>(env->GetByteArrayElements(dataArray, nullptr));
-    if (dataElements == nullptr) {
-        return false;
-    }
-
-    std::vector<byte> data(dataElements, dataElements + dataSize);
-
-    env->ReleaseByteArrayElements(dataArray, reinterpret_cast<jbyte *>(dataElements), JNI_ABORT);
-
-    hashFunction->update(reinterpret_cast<const uint8_t*>(data.data()), data.size());
-
-    return true;
-}
-
-JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_finishHash(
-        JNIEnv *env,
-        jclass cls
-) {
-    if (hashFunction == nullptr) {
+    int chunkCount = env->GetArrayLength(chunkArray);
+    if (chunkCount < 1) {
         return nullptr;
     }
 
-    secure_vector<uint8_t> result;
-    result = hashFunction->final();
+    std::unique_ptr<HashFunction> function;
 
-    hashFunction = nullptr;
+    switch (static_cast<CryptoHashAlgorithm>(algorithm)) {
+        case Sha256:
+            function = HashFunction::create("SHA-256");
+            break;
+        case Sha512:
+            function = HashFunction::create("SHA-512");
+            break;
+        default:
+            return nullptr;
+    }
 
-    return convertUIntArrayToJByteArray(env, result);
+    for (int chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+        auto chunkPointer = reinterpret_cast<jbyteArray>(
+                env->GetObjectArrayElement(chunkArray, chunkIndex)
+        );
+        if (chunkPointer == nullptr) {
+            return nullptr;
+        }
+
+        auto data = convertJByteArrayToVector(env, chunkPointer);
+
+        function->update(reinterpret_cast<const uint8_t *>(data.data()), data.size());
+    }
+
+    return convertUIntArrayToJByteArray(env, function->final());
 }
 
-JNIEXPORT jboolean JNICALL Java_com_keepassrn_KpHelper_startHmac(
+JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         JNIEnv *env,
-        jclass ,
+        jclass,
         jint algorithm,
-        jbyteArray keyArray
+        jbyteArray keyArray,
+        jobjectArray chunkArray
 ) {
-    if (hmacFunction != nullptr) {
-        return false;
+    int chunkCount = env->GetArrayLength(chunkArray);
+    if (chunkCount < 1) {
+        return nullptr;
     }
 
     int keySize = env->GetArrayLength(keyArray);
     if (keySize < 1) {
-        return false;
-    }
-
-    byte *keyElements = reinterpret_cast<byte *>(env->GetByteArrayElements(keyArray, nullptr));
-    if (keyElements == nullptr) {
-        return false;
-    }
-
-    std::vector<byte> key(keyElements, keyElements + keySize);
-
-    env->ReleaseByteArrayElements(keyArray, reinterpret_cast<jbyte *>(keyElements), JNI_ABORT);
-
-    switch (algorithm) {
-        case 0:
-            hmacFunction = MessageAuthenticationCode::create("HMAC(SHA-256)");
-            break;
-        case 1:
-            hmacFunction = MessageAuthenticationCode::create("HMAC(SHA-512)");
-            break;
-        default:
-            return false;
-    }
-
-    hmacFunction->set_key(reinterpret_cast<const uint8_t*>(key.data()), key.size());
-
-    return true;
-}
-
-JNIEXPORT jboolean JNICALL Java_com_keepassrn_KpHelper_continueHmac(
-        JNIEnv *env,
-        jclass cls,
-        jbyteArray dataArray
-) {
-    if (hmacFunction == nullptr) {
-        return false;
-    }
-
-    int dataSize = env->GetArrayLength(dataArray);
-    if (dataSize < 1) {
-        return false;
-    }
-
-    byte *dataElements = reinterpret_cast<byte *>(env->GetByteArrayElements(dataArray, nullptr));
-    if (dataElements == nullptr) {
-        return false;
-    }
-
-    std::vector<byte> data(dataElements, dataElements + dataSize);
-
-    env->ReleaseByteArrayElements(dataArray, reinterpret_cast<jbyte *>(dataElements), JNI_ABORT);
-
-    hmacFunction->update(reinterpret_cast<const uint8_t*>(data.data()), data.size());
-
-    return true;
-}
-
-JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_finishHmac(
-        JNIEnv *env,
-        jclass cls
-) {
-    if (hmacFunction == nullptr) {
         return nullptr;
     }
 
-    secure_vector<uint8_t> result;
-    result = hmacFunction->final();
+    std::unique_ptr<MessageAuthenticationCode> function;
 
-    hmacFunction = nullptr;
+    switch (static_cast<CryptoHashAlgorithm>(algorithm)) {
+        case Sha256:
+            function = MessageAuthenticationCode::create("HMAC(SHA-256)");
+            break;
+        case Sha512:
+            function = MessageAuthenticationCode::create("HMAC(SHA-512)");
+            break;
+        default:
+            return nullptr;
+    }
 
-    return convertUIntArrayToJByteArray(env, result);
+    secure_vector<byte> key = convertJByteArrayToVector(env, keyArray);
+    function->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
+
+    for (int chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+        auto chunkPointer = reinterpret_cast<jbyteArray>(
+                env->GetObjectArrayElement(chunkArray, chunkIndex)
+        );
+        if (chunkPointer == nullptr) {
+            return nullptr;
+        }
+
+        auto data = convertJByteArrayToVector(env, chunkPointer);
+
+        function->update(reinterpret_cast<const uint8_t *>(data.data()), data.size());
+    }
+
+    return convertUIntArrayToJByteArray(env, function->final());
 }
 
 }

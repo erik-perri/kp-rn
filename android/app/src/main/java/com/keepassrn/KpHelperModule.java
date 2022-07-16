@@ -66,15 +66,15 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void createHash(ReadableArray data, double algorithm, Promise promise) {
+    public void hash(double algorithm, ReadableArray data, Promise promise) {
         try {
-            KpHelper.startHash((int) algorithm);
+            byte[][] chunks = new byte[data.size()][];
 
             for (int i = 0; i < data.size(); i++) {
-                KpHelper.continueHash(getBytesFromArray(data.getArray(i)));
+                chunks[i] = getBytesFromArray(data.getArray(i));
             }
 
-            byte[] hash = KpHelper.finishHash();
+            byte[] hash = KpHelper.hash((int) algorithm, chunks);
 
             promise.resolve(getArrayFromBytes(hash));
         } catch (Exception e) {
@@ -83,17 +83,17 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void createHmac(ReadableArray key, ReadableArray data, double algorithm, Promise promise) {
+    public void hmac(double algorithm, ReadableArray key, ReadableArray data, Promise promise) {
         try {
-            KpHelper.startHmac((int) algorithm, getBytesFromArray(key));
+            byte[][] chunks = new byte[data.size()][];
 
             for (int i = 0; i < data.size(); i++) {
-                KpHelper.continueHmac(getBytesFromArray(data.getArray(i)));
+                chunks[i] = getBytesFromArray(data.getArray(i));
             }
 
-            byte[] hmac = KpHelper.finishHmac();
+            byte[] hash = KpHelper.hmac((int) algorithm, getBytesFromArray(key), chunks);
 
-            promise.resolve(getArrayFromBytes(hmac));
+            promise.resolve(getArrayFromBytes(hash));
         } catch (Exception e) {
             promise.reject(e);
         }
@@ -102,6 +102,10 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     private byte[] getBytesFromArray(ReadableArray array) throws Exception {
         int size = array.size();
         byte[] result = new byte[size];
+
+        if (size < 1) {
+            return result;
+        }
 
         for (int i = 0; i < size; i++) {
             ReadableType type = array.getType(i);
@@ -118,8 +122,10 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     private WritableArray getArrayFromBytes(byte[] bytes) {
         WritableArray result = new WritableNativeArray();
 
-        for (byte b : bytes) {
-            result.pushInt(b);
+        if (bytes != null) {
+            for (byte b : bytes) {
+                result.pushInt(b);
+            }
         }
 
         return result;

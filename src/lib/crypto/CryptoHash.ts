@@ -14,7 +14,7 @@ export default class CryptoHash {
       data = [data];
     }
 
-    return await KpHelperModule.createHash(data, algo);
+    return await KpHelperModule.hash(algo, data);
   }
 
   public static async hmac(
@@ -26,6 +26,6 @@ export default class CryptoHash {
       data = [data];
     }
 
-    return await KpHelperModule.createHmac(key, data, algo);
+    return await KpHelperModule.hmac(algo, key, data);
   }
 }
