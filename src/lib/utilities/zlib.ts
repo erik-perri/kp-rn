@@ -1,13 +1,5 @@
-import zlib from 'zlib';
+import pako from 'pako';
 
-export async function gunzip(input: Uint8Array): Promise<Buffer> {
-  return await new Promise<Buffer>((resolve, reject) => {
-    zlib.gunzip(input, (err, buffer) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(buffer);
-      }
-    });
-  });
+export async function gunzip(input: Uint8Array): Promise<Uint8Array> {
+  return Promise.resolve(pako.inflate(input));
 }
