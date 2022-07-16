@@ -6,6 +6,7 @@ import {
   KeePassFile,
   KeepPassGroup,
 } from './Kdbx4XmlTypes';
+import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 
 export default class Kdbx4XmlReader {
   public decodeFile(
@@ -110,14 +111,14 @@ export default class Kdbx4XmlReader {
   }
 
   private decodeUuid(value: string): string {
-    return stringify(Buffer.from(value, 'base64'));
+    return stringify(Uint8ArrayWriter.fromBase64(value));
   }
 
   private decodeProtectedString(
     value: string,
     randomStream: KeePass2RandomStream,
   ): string {
-    const decrypted = randomStream.process(Buffer.from(value, 'base64'));
+    const decrypted = randomStream.process(Uint8ArrayWriter.fromBase64(value));
 
     return String.fromCharCode(...decrypted);
   }

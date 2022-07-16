@@ -57,6 +57,14 @@ describe('Uint8ArrayWriter', () => {
       );
     });
 
+    it('converts fromBase64', () => {
+      const bytes = Uint8ArrayWriter.fromBase64('cGFzc3dvcmQ=');
+
+      expect(bytes).toEqualUint8Array(
+        Uint8Array.from([0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64]),
+      );
+    });
+
     it.each([
       {
         input: BigInt('18446744073709551615'),

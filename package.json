@@ -12,6 +12,7 @@
     "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
+    "base64-js": "^1.5.1",
     "react": "18.0.0",
     "react-native": "0.69.1",
     "react-native-document-picker": "^8.1.1",

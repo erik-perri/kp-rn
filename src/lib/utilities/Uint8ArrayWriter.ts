@@ -1,5 +1,7 @@
 /* eslint-disable no-bitwise */
 
+import {toByteArray} from 'base64-js';
+
 export default class Uint8ArrayWriter {
   private readonly bytes: Uint8Array;
 
@@ -20,6 +22,10 @@ export default class Uint8ArrayWriter {
     const writer = new Uint8ArrayWriter(new Uint8Array(8));
     writer.writeUInt64LE(data, 0);
     return writer.slice();
+  }
+
+  static fromBase64(value: string): Uint8Array {
+    return toByteArray(value);
   }
 
   slice(start?: number, end?: number): Uint8Array {
