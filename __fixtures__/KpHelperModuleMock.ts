@@ -9,10 +9,10 @@ const KpHelperModuleMock: HelperModule = {
       [Uint8Array | number[], Uint8Array | number[], number]
     >()
     .mockImplementation(async (key, seed, rounds) => {
-      let result = new Uint8Array(key);
+      let result = Uint8Array.from(key);
 
       if (Array.isArray(seed)) {
-        seed = new Uint8Array(seed);
+        seed = Uint8Array.from(seed);
       }
 
       while (rounds--) {

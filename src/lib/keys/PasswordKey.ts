@@ -23,7 +23,7 @@ export default class PasswordKey extends Key {
     if (data.byteLength !== SHA256_SIZE) {
       throw new Error('Invalid key length');
     }
-    this.rawKey = new Uint8Array(data);
+    this.rawKey = Uint8Array.from(data);
   }
 
   deserialize(_data: Uint8Array): void {

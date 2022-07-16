@@ -39,6 +39,6 @@ export default class AesKdf extends Kdf {
     rounds: number,
   ): Promise<Uint8Array> {
     const result = await KpHelperModule.transformAesKdfKey(key, seed, rounds);
-    return CryptoHash.hash(new Uint8Array(result), CryptoHashAlgorithm.Sha256);
+    return CryptoHash.hash(Uint8Array.from(result), CryptoHashAlgorithm.Sha256);
   }
 }

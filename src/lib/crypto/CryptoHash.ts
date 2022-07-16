@@ -41,7 +41,7 @@ export default class CryptoHash {
   public static hash(data: Uint8Array, algo: CryptoHashAlgorithm): Uint8Array {
     const hash = new CryptoHash(algo);
     hash.addData(data);
-    return new Uint8Array(hash.result());
+    return Uint8Array.from(hash.result());
   }
 
   public static hmac(
@@ -51,7 +51,7 @@ export default class CryptoHash {
   ): Uint8Array {
     const hash = new CryptoHash(algo, key);
     hash.addData(data);
-    return new Uint8Array(hash.result());
+    return Uint8Array.from(hash.result());
   }
 
   public addData(data: Uint8Array): void {

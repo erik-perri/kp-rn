@@ -47,7 +47,7 @@ export function hmacKey(
   const hmacKeyHash = new CryptoHash(CryptoHashAlgorithm.Sha512);
   hmacKeyHash.addData(masterSeed);
   hmacKeyHash.addData(transformedMasterKey);
-  hmacKeyHash.addData(new Uint8Array([0x01]));
+  hmacKeyHash.addData(Uint8Array.from([0x01]));
   return hmacKeyHash.result();
 }
 
