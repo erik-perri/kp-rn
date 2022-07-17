@@ -52,12 +52,21 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void transformAesKdfKey(ReadableArray key, ReadableArray seed, double iterations, Promise promise) {
+    public void transformAesKdfKey(
+            ReadableArray key,
+            ReadableArray seed,
+            double iterations,
+            Promise promise
+    ) {
         try {
             byte[] keyBytes = getBytesFromArray(key);
             byte[] seedBytes = getBytesFromArray(seed);
 
-            byte[] transformedBytes = KpHelper.transformAesKdfKey(keyBytes, seedBytes, (int) iterations);
+            byte[] transformedBytes = KpHelper.transformAesKdfKey(
+                    keyBytes,
+                    seedBytes,
+                    (int) iterations
+            );
 
             promise.resolve(getArrayFromBytes(transformedBytes));
         } catch (Exception e) {
@@ -66,15 +75,15 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void hash(double algorithm, ReadableArray data, Promise promise) {
+    public void hash(double algorithm, ReadableArray chunks, Promise promise) {
         try {
-            byte[][] chunks = new byte[data.size()][];
+            byte[][] chunkArrays = new byte[chunks.size()][];
 
-            for (int i = 0; i < data.size(); i++) {
-                chunks[i] = getBytesFromArray(data.getArray(i));
+            for (int i = 0; i < chunks.size(); i++) {
+                chunkArrays[i] = getBytesFromArray(chunks.getArray(i));
             }
 
-            byte[] hash = KpHelper.hash((int) algorithm, chunks);
+            byte[] hash = KpHelper.hash((int) algorithm, chunkArrays);
 
             promise.resolve(getArrayFromBytes(hash));
         } catch (Exception e) {
@@ -83,15 +92,15 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void hmac(double algorithm, ReadableArray key, ReadableArray data, Promise promise) {
+    public void hmac(double algorithm, ReadableArray key, ReadableArray chunks, Promise promise) {
         try {
-            byte[][] chunks = new byte[data.size()][];
+            byte[][] chunkArrays = new byte[chunks.size()][];
 
-            for (int i = 0; i < data.size(); i++) {
-                chunks[i] = getBytesFromArray(data.getArray(i));
+            for (int i = 0; i < chunks.size(); i++) {
+                chunkArrays[i] = getBytesFromArray(chunks.getArray(i));
             }
 
-            byte[] hash = KpHelper.hmac((int) algorithm, getBytesFromArray(key), chunks);
+            byte[] hash = KpHelper.hmac((int) algorithm, getBytesFromArray(key), chunkArrays);
 
             promise.resolve(getArrayFromBytes(hash));
         } catch (Exception e) {
