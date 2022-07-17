@@ -1,0 +1,25 @@
+FROM cimg/android:2021.08.1-ndk AS android-ndk
+
+ARG ANDROID_NAME
+ARG ANDROID_ARCH
+ARG ANDROID_TOOLCHAIN_SUF
+ARG ANDROID_ARCH_SUF
+ARG ANDROID_SDK_VER
+
+RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends python
+RUN mkdir -p /home/circleci/project/botan/android
+WORKDIR /home/circleci/project/botan
+COPY botan/configure.py configure.py
+COPY botan/src src
+COPY botan/doc doc
+COPY botan/license.txt license.txt
+COPY botan/news.rst news.rst
+
+ENV PATH=$PATH:$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/
+RUN ./configure.py --prefix=android/${ANDROID_NAME} \
+                   --os=android \
+                   --cpu=${ANDROID_ARCH} \
+                   --cc=clang \
+                   --cc-bin=${ANDROID_ARCH}${ANDROID_ARCH_SUF}-linux-android${ANDROID_TOOLCHAIN_SUF}${ANDROID_SDK_VER}-clang++
+RUN make -j`getconf _NPROCESSORS_ONLN`
+RUN make install
