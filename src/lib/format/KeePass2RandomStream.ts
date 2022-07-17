@@ -17,7 +17,7 @@ export default class KeePass2RandomStream {
         throw new Error('Not implemented');
       case SymmetricCipherMode.ChaCha20: {
         const keyIv = await CryptoHash.hash(key, CryptoHashAlgorithm.Sha512);
-        this.cipher.init(
+        await this.cipher.init(
           SymmetricCipherMode.ChaCha20,
           SymmetricCipherDirection.Encrypt,
           keyIv.subarray(0, 32),
@@ -30,11 +30,11 @@ export default class KeePass2RandomStream {
     }
   }
 
-  process(data: Uint8Array): Uint8Array {
+  async process(data: Uint8Array): Promise<Uint8Array> {
     if (!this.cipher) {
       throw new Error('No cipher set');
     }
 
-    return this.cipher.process(data);
+    return await this.cipher.process(data);
   }
 }

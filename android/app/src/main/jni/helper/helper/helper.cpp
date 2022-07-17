@@ -1,9 +1,10 @@
+#include <android/log.h>
 #include <jni.h>
 #include <botan/block_cipher.h>
+#include <botan/cipher_mode.h>
 #include <botan/hash.h>
 #include <botan/hmac.h>
 #include <botan/types.h>
-#include <android/log.h>
 
 using namespace Botan;
 
@@ -83,6 +84,52 @@ enum CryptoHashAlgorithm {
     Sha256,
     Sha512,
 };
+
+enum SymmetricCipherMode {
+    Aes128_CBC,
+    Aes256_CBC,
+    Aes128_CTR,
+    Aes256_CTR,
+    Twofish_CBC,
+    ChaCha20,
+    Salsa20,
+    Aes256_GCM,
+    InvalidMode = -1,
+};
+
+enum SymmetricCipherDirection {
+    Decrypt,
+    Encrypt
+};
+
+std::string SymmetricCipher_modeToString(const SymmetricCipherMode mode) {
+    switch (mode) {
+        case Aes128_CBC:
+            return "AES-128/CBC";
+        case Aes256_CBC:
+            return "AES-256/CBC";
+        case Aes128_CTR:
+            return "CTR(AES-128)";
+        case Aes256_CTR:
+            return "CTR(AES-256)";
+        case Aes256_GCM:
+            return "AES-256/GCM";
+        case Twofish_CBC:
+            return "Twofish/CBC";
+        case Salsa20:
+            return "Salsa20";
+        case ChaCha20:
+            return "ChaCha20";
+        default:
+            __android_log_print(
+                    ANDROID_LOG_WARN,
+                    LogTag,
+                    "SymmetricCipher::modeToString: Invalid Mode Specified: %d",
+                    mode
+            );
+            return {};
+    }
+}
 
 extern "C" {
 
@@ -171,12 +218,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         jobjectArray chunkArray
 ) {
     int chunkCount = env->GetArrayLength(chunkArray);
-    if (chunkCount < 1) {
-        return nullptr;
-    }
-
     int keySize = env->GetArrayLength(keyArray);
-    if (keySize < 1) {
+    if (chunkCount < 1 || keySize < 1) {
         return nullptr;
     }
 
@@ -210,6 +253,62 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
     }
 
     return convertUIntArrayToJByteArray(env, function->final());
+}
+
+JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
+        JNIEnv *env,
+        jclass,
+        jint cipherMode,
+        jint cipherDirection,
+        jbyteArray keyArray,
+        jbyteArray ivArray,
+        jbyteArray dataArray
+) {
+    int keySize = env->GetArrayLength(keyArray);
+    int ivSize = env->GetArrayLength(ivArray);
+    int dataSize = env->GetArrayLength(dataArray);
+    if (keySize < 1 || ivSize < 1 || dataSize < 1) {
+        return nullptr;
+    }
+
+    secure_vector<byte> key = convertJByteArrayToVector(env, keyArray);
+    secure_vector<byte> iv = convertJByteArrayToVector(env, ivArray);
+    secure_vector<byte> data = convertJByteArrayToVector(env, dataArray);
+    if (key.empty() || iv.empty() || data.empty()) {
+        return nullptr;
+    }
+
+    auto mode = static_cast<SymmetricCipherMode>(cipherMode);
+    if (mode == InvalidMode) {
+        __android_log_print(ANDROID_LOG_WARN, LogTag, "KpHelper_cipher: Invalid mode.");
+        return nullptr;
+    }
+    auto direction = static_cast<SymmetricCipherDirection>(cipherDirection);
+    auto botanMode = SymmetricCipher_modeToString(mode);
+    auto botanDirection = direction == SymmetricCipherDirection::Encrypt
+                          ? Botan::ENCRYPTION
+                          : Botan::DECRYPTION;
+
+    auto cipher = Botan::Cipher_Mode::create_or_throw(botanMode, botanDirection);
+
+    cipher->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
+
+    if (!cipher->valid_nonce_length(iv.size())) {
+        __android_log_print(
+                ANDROID_LOG_WARN,
+                LogTag,
+                "KpHelper_cipher: Invalid IV size of %d for %s.",
+                iv.size(),
+                botanMode.data()
+        );
+        return nullptr;
+    }
+
+    cipher->start(reinterpret_cast<const uint8_t *>(iv.data()), iv.size());
+
+    cipher->finish(data);
+
+    return convertUIntArrayToJByteArray(env, data);
 }
 
 }

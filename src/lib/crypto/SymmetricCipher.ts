@@ -5,6 +5,7 @@ import {
   CIPHER_TWOFISH,
 } from '../format/Keepass2';
 import {Chacha20} from 'ts-chacha20';
+import KpHelperModule from '../utilities/KpHelperModule';
 
 export enum SymmetricCipherDirection {
   Decrypt,
@@ -25,32 +26,46 @@ export enum SymmetricCipherMode {
 
 export default class SymmetricCipher {
   private mode?: SymmetricCipherMode;
-  private processor?: (data: Uint8Array) => Uint8Array;
+  private processor?: (data: Uint8Array) => Promise<Uint8Array>;
 
-  init(
+  async init(
     mode: SymmetricCipherMode,
     direction: SymmetricCipherDirection,
     key: Uint8Array,
     iv: Uint8Array,
-  ): void {
+  ): Promise<void> {
     this.mode = mode;
     if (mode === SymmetricCipherMode.InvalidMode) {
       throw new Error('SymmetricCipher::init: Invalid cipher mode.');
     }
 
     switch (mode) {
-      case SymmetricCipherMode.ChaCha20:
+      case SymmetricCipherMode.Aes256_CBC: {
+        this.processor = async data => {
+          return await KpHelperModule.cipher(mode, direction, key, iv, data);
+        };
+        break;
+      }
+
+      case SymmetricCipherMode.ChaCha20: {
         const cipher = new Chacha20(key, iv);
 
-        this.processor = data => {
+        this.processor = async data => {
           return direction === SymmetricCipherDirection.Encrypt
             ? cipher.encrypt(data)
             : cipher.decrypt(data);
         };
+        break;
+      }
+
+      default:
+        throw new Error(
+          `Cipher ${SymmetricCipherMode[mode]} (${mode}) not implemented`,
+        );
     }
   }
 
-  process(data: Uint8Array): Uint8Array {
+  async process(data: Uint8Array): Promise<Uint8Array> {
     if (!this.processor) {
       throw new Error('Cipher not initialized prior to use.');
     }
@@ -59,7 +74,7 @@ export default class SymmetricCipher {
       throw new Error('Cannot process 0 length data.');
     }
 
-    return this.processor(data);
+    return await this.processor(data);
   }
 
   static cipherUuidToMode(uuid?: string): SymmetricCipherMode {

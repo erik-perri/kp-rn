@@ -1,5 +1,9 @@
 import {NativeModules} from 'react-native';
 import {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import {
+  SymmetricCipherDirection,
+  SymmetricCipherMode,
+} from '../crypto/SymmetricCipher';
 
 const {KpHelperModule} = NativeModules;
 
@@ -19,6 +23,14 @@ export interface NativeHelperModule {
     key: number[],
     chunks: number[][],
   ): Promise<number[]>;
+
+  cipher(
+    mode: number,
+    direction: number,
+    key: number[],
+    iv: number[],
+    data: number[],
+  ): Promise<number[]>;
 }
 
 export class LocalHelperModule {
@@ -30,11 +42,7 @@ export class LocalHelperModule {
     iterations: number,
   ): Promise<Uint8Array> {
     return Uint8Array.from(
-      await this.module.transformAesKdfKey(
-        [...key.values()],
-        [...seed.values()],
-        iterations,
-      ),
+      await this.module.transformAesKdfKey([...key], [...seed], iterations),
     );
   }
 
@@ -49,7 +57,7 @@ export class LocalHelperModule {
     return Uint8Array.from(
       await this.module.hash(
         algorithm,
-        data.map(datum => [...datum.values()]),
+        data.map(datum => [...datum]),
       ),
     );
   }
@@ -62,9 +70,21 @@ export class LocalHelperModule {
     return Uint8Array.from(
       await this.module.hmac(
         algorithm,
-        [...key.values()],
-        data.map(datum => [...datum.values()]),
+        [...key],
+        data.map(datum => [...datum]),
       ),
+    );
+  }
+
+  async cipher(
+    mode: SymmetricCipherMode,
+    direction: SymmetricCipherDirection,
+    key: Uint8Array,
+    iv: Uint8Array,
+    data: Uint8Array,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.cipher(mode, direction, [...key], [...iv], [...data]),
     );
   }
 }

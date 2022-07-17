@@ -99,6 +99,30 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void cipher(
+            double mode,
+            double direction,
+            ReadableArray key,
+            ReadableArray iv,
+            ReadableArray data,
+            Promise promise
+    ) {
+        try {
+            byte[] processed = KpHelper.cipher(
+                    (int) mode,
+                    (int) direction,
+                    getBytesFromArray(key),
+                    getBytesFromArray(iv),
+                    getBytesFromArray(data)
+            );
+
+            promise.resolve(getArrayFromBytes(processed));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
     private byte[] getBytesFromArray(ReadableArray array) throws Exception {
         int size = array.size();
         byte[] result = new byte[size];

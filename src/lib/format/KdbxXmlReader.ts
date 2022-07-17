@@ -24,7 +24,7 @@ export default class KdbxXmlReader {
     });
 
     const parser = new Kdbx4XmlReader();
-    const parsedJson = parser.decodeFile(parsedXml, randomStream);
+    const parsedJson = await parser.decodeFile(parsedXml, randomStream);
 
     database.metadata.generator = parsedJson.KeePassFile.Meta[0].Generator[0];
     database.metadata.databaseName =

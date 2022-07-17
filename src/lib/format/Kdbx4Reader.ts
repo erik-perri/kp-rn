@@ -23,7 +23,10 @@ import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
 import KdbxXmlReader from './KdbxXmlReader';
 import KeePass2RandomStream from './KeePass2RandomStream';
 import {gunzip} from '../utilities/zlib';
-import * as crypto from 'crypto';
+import SymmetricCipher, {
+  SymmetricCipherDirection,
+  SymmetricCipherMode,
+} from '../crypto/SymmetricCipher';
 
 export default class Kdbx4Reader extends KdbxReader {
   private binaryPool: Record<string, Uint8Array> = {};
@@ -284,17 +287,26 @@ export default class Kdbx4Reader extends KdbxReader {
       hmacKey,
     );
 
-    let readBytes = new Uint8Array(0);
+    const mode = SymmetricCipher.cipherUuidToMode(database.getCipher());
+    if (mode === SymmetricCipherMode.InvalidMode) {
+      throw new Error(`Unknown cipher ${database.getCipher()}`);
+    }
+
+    const cipher = new SymmetricCipher();
+    await cipher.init(
+      mode,
+      SymmetricCipherDirection.Decrypt,
+      finalKey,
+      this.getEncryptionIV(),
+    );
+
+    let readBytes: Uint8Array = new Uint8Array(0);
 
     while (await stream.readHashedBlock()) {
-      const cipher = crypto
-        .createDecipheriv('aes-256-cbc', finalKey, this.getEncryptionIV())
-        .setAutoPadding(true);
-
-      const result = [...cipher.update(stream.getBuffer()), ...cipher.final()];
-
-      readBytes = Uint8Array.from([...readBytes, ...result]);
+      readBytes = new Uint8Array([...readBytes, ...stream.getBuffer()]);
     }
+
+    readBytes = await cipher.process(readBytes);
 
     const isCompressed =
       database.getCompressionAlgorithm() ===

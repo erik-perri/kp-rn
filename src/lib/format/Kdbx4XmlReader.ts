@@ -9,10 +9,10 @@ import {
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 
 export default class Kdbx4XmlReader {
-  public decodeFile(
+  async decodeFile(
     parsedXml: unknown,
     randomStream: KeePass2RandomStream,
-  ): KeePassFile {
+  ): Promise<KeePassFile> {
     if (!isKeePassFile(parsedXml)) {
       throw new Error('Unknown file format');
     }
@@ -22,7 +22,7 @@ export default class Kdbx4XmlReader {
       groupIndex < parsedXml.KeePassFile.Root[0].Group.length;
       groupIndex++
     ) {
-      parsedXml.KeePassFile.Root[0].Group[groupIndex] = this.decodeGroup(
+      parsedXml.KeePassFile.Root[0].Group[groupIndex] = await this.decodeGroup(
         parsedXml.KeePassFile.Root[0].Group[groupIndex],
         randomStream,
       );
@@ -31,15 +31,15 @@ export default class Kdbx4XmlReader {
     return parsedXml;
   }
 
-  private decodeGroup(
+  private async decodeGroup(
     group: KeepPassGroup,
     randomStream: KeePass2RandomStream,
-  ): KeepPassGroup {
+  ): Promise<KeepPassGroup> {
     group.UUID[0] = this.decodeUuid(group.UUID[0]);
 
     if (group.Entry) {
       for (let entryIndex = 0; entryIndex < group.Entry.length; entryIndex++) {
-        group.Entry[entryIndex] = this.decodeEntry(
+        group.Entry[entryIndex] = await this.decodeEntry(
           group.Entry[entryIndex],
           randomStream,
         );
@@ -48,7 +48,7 @@ export default class Kdbx4XmlReader {
 
     if (group.Group) {
       for (let groupIndex = 0; groupIndex < group.Group.length; groupIndex++) {
-        group.Group[groupIndex] = this.decodeGroup(
+        group.Group[groupIndex] = await this.decodeGroup(
           group.Group[groupIndex],
           randomStream,
         );
@@ -58,10 +58,10 @@ export default class Kdbx4XmlReader {
     return group;
   }
 
-  private decodeEntry(
+  private async decodeEntry(
     entry: KeePassEntry,
     randomStream: KeePass2RandomStream,
-  ): KeePassEntry {
+  ): Promise<KeePassEntry> {
     entry.UUID[0] = this.decodeUuid(entry.UUID[0]);
 
     for (
@@ -80,7 +80,7 @@ export default class Kdbx4XmlReader {
       }
 
       entry.String[stringIndex].Value = [
-        value._ ? this.decodeProtectedString(value._, randomStream) : '',
+        value._ ? await this.decodeProtectedString(value._, randomStream) : '',
       ];
     }
 
@@ -99,10 +99,11 @@ export default class Kdbx4XmlReader {
           entryIndex < entry.History[historyIndex].Entry.length;
           entryIndex++
         ) {
-          entry.History[historyIndex].Entry[entryIndex] = this.decodeEntry(
-            entry.History[historyIndex].Entry[entryIndex],
-            randomStream,
-          );
+          entry.History[historyIndex].Entry[entryIndex] =
+            await this.decodeEntry(
+              entry.History[historyIndex].Entry[entryIndex],
+              randomStream,
+            );
         }
       }
     }
@@ -114,11 +115,13 @@ export default class Kdbx4XmlReader {
     return stringify(Uint8ArrayWriter.fromBase64(value));
   }
 
-  private decodeProtectedString(
+  private async decodeProtectedString(
     value: string,
     randomStream: KeePass2RandomStream,
-  ): string {
-    const decrypted = randomStream.process(Uint8ArrayWriter.fromBase64(value));
+  ): Promise<string> {
+    const decrypted = await randomStream.process(
+      Uint8ArrayWriter.fromBase64(value),
+    );
 
     return String.fromCharCode(...decrypted);
   }

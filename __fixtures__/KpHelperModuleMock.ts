@@ -1,6 +1,10 @@
 import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
 import {CryptoHashAlgorithm} from '../src/lib/crypto/CryptoHash';
+import {
+  SymmetricCipherDirection,
+  SymmetricCipherMode,
+} from '../src/lib/crypto/SymmetricCipher';
 
 const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
   readFile: jest.fn().mockResolvedValue([]),
@@ -44,6 +48,24 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
       data.forEach(datum => hmac.update(datum));
 
       return hmac.digest();
+    }),
+  cipher: jest
+    .fn<
+      Promise<Uint8Array>,
+      [
+        SymmetricCipherMode,
+        SymmetricCipherDirection,
+        Uint8Array,
+        Uint8Array,
+        Uint8Array,
+      ]
+    >()
+    .mockImplementation(async (mode, direction, key, iv, data) => {
+      const cipher = crypto
+        .createDecipheriv('aes-256-cbc', key, iv)
+        .setAutoPadding(true);
+
+      return Uint8Array.from([...cipher.update(data), ...cipher.final()]);
     }),
 };
 
