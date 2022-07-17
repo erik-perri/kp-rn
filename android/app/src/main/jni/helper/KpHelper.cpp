@@ -6,6 +6,8 @@
 #include <botan/hmac.h>
 #include <botan/types.h>
 
+#include "JniHelpers.h"
+
 const char LogTag[] = "KpHelper";
 
 jbyteArray convertUIntArrayToJByteArray(
@@ -67,12 +69,11 @@ bool SymmetricCipher_aesKdf(
         }
         std::copy(out.begin(), out.end(), data.begin());
         return true;
-    } catch (std::exception &e) {
+    } catch (...) {
         __android_log_print(
                 ANDROID_LOG_WARN,
                 LogTag,
-                "SymmetricCipher::aesKdf: Could not process: %s",
-                e.what()
+                "SymmetricCipher::aesKdf: Error while processing"
         );
         return false;
     }
@@ -138,14 +139,17 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
         jbyteArray seedArray,
         jint rounds
 ) {
-    int keySize = env->GetArrayLength(keyArray);
-    int seedSize = env->GetArrayLength(seedArray);
-    if (keySize < 1 || seedSize < 1) {
+    auto seed = convertJByteArrayToVector(env, seedArray);
+    if (seed.empty()) {
+        throwIllegalArgumentException(env, "Missing seed");
         return nullptr;
     }
 
-    auto seed = convertJByteArrayToVector(env, seedArray);
     auto key = convertJByteArrayToVector(env, keyArray);
+    if (key.empty()) {
+        throwIllegalArgumentException(env, "Missing key");
+        return nullptr;
+    }
 
     Botan::secure_vector<Botan::byte> out(key);
 
@@ -164,6 +168,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hash(
 ) {
     int chunkCount = env->GetArrayLength(chunkArray);
     if (chunkCount < 1) {
+        throwIllegalArgumentException(env, "Missing chunks");
         return nullptr;
     }
 
@@ -204,8 +209,14 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         jobjectArray chunkArray
 ) {
     int chunkCount = env->GetArrayLength(chunkArray);
-    int keySize = env->GetArrayLength(keyArray);
-    if (chunkCount < 1 || keySize < 1) {
+    if (chunkCount < 1) {
+        throwIllegalArgumentException(env, "Missing chunks");
+        return nullptr;
+    }
+
+    auto key = convertJByteArrayToVector(env, keyArray);
+    if (key.empty()) {
+        throwIllegalArgumentException(env, "Missing key");
         return nullptr;
     }
 
@@ -221,8 +232,6 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         default:
             return nullptr;
     }
-
-    auto key = convertJByteArrayToVector(env, keyArray);
 
     function->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
 
@@ -251,49 +260,66 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
         jbyteArray ivArray,
         jbyteArray dataArray
 ) {
-    int keySize = env->GetArrayLength(keyArray);
-    int ivSize = env->GetArrayLength(ivArray);
-    int dataSize = env->GetArrayLength(dataArray);
-    if (keySize < 1 || ivSize < 1 || dataSize < 1) {
+    auto key = convertJByteArrayToVector(env, keyArray);
+    if (key.empty()) {
+        throwIllegalArgumentException(env, "Missing key");
         return nullptr;
     }
 
-    auto key = convertJByteArrayToVector(env, keyArray);
     auto iv = convertJByteArrayToVector(env, ivArray);
+    if (iv.empty()) {
+        throwIllegalArgumentException(env, "Missing IV");
+        return nullptr;
+    }
+
     auto data = convertJByteArrayToVector(env, dataArray);
-    if (key.empty() || iv.empty() || data.empty()) {
+    if (data.empty()) {
+        throwIllegalArgumentException(env, "Missing data");
         return nullptr;
     }
 
     auto mode = static_cast<SymmetricCipherMode>(cipherMode);
     if (mode == InvalidMode) {
-        __android_log_print(ANDROID_LOG_WARN, LogTag, "KpHelper_cipher: Invalid mode.");
+        throwIllegalArgumentException(env, "Invalid mode");
         return nullptr;
     }
+
     auto direction = static_cast<SymmetricCipherDirection>(cipherDirection);
     auto botanMode = SymmetricCipher_modeToString(mode);
     auto botanDirection = direction == Encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION;
 
-    auto cipher = Botan::Cipher_Mode::create_or_throw(botanMode, botanDirection);
+    try {
+        auto cipher = Botan::Cipher_Mode::create_or_throw(botanMode, botanDirection);
 
-    cipher->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
+        cipher->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
 
-    if (!cipher->valid_nonce_length(iv.size())) {
+        if (!cipher->valid_nonce_length(iv.size())) {
+            __android_log_print(
+                    ANDROID_LOG_WARN,
+                    LogTag,
+                    "KpHelper_cipher: Invalid IV size of %d for %s.",
+                    iv.size(),
+                    botanMode.data()
+            );
+
+            throwIllegalArgumentException(env, "Invalid IV size");
+            return nullptr;
+        }
+
+        cipher->start(reinterpret_cast<const uint8_t *>(iv.data()), iv.size());
+
+        cipher->finish(data);
+
+        return convertUIntArrayToJByteArray(env, data);
+    } catch (...) {
         __android_log_print(
-                ANDROID_LOG_WARN,
+                ANDROID_LOG_DEBUG,
                 LogTag,
-                "KpHelper_cipher: Invalid IV size of %d for %s.",
-                iv.size(),
-                botanMode.data()
+                "processCipher: Unknown exception caught"
         );
+
         return nullptr;
     }
-
-    cipher->start(reinterpret_cast<const uint8_t *>(iv.data()), iv.size());
-
-    cipher->finish(data);
-
-    return convertUIntArrayToJByteArray(env, data);
 }
 
 }

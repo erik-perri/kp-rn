@@ -8,7 +8,8 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := helper
-LOCAL_SRC_FILES := KpHelper.cpp
+LOCAL_SRC_FILES := KpHelper.cpp JniHelpers.cpp
+LOCAL_C_INCLUDES := JniHelpers.h
 LOCAL_SHARED_LIBRARIES := botan
 LOCAL_LDLIBS := -llog
 include $(BUILD_SHARED_LIBRARY)
