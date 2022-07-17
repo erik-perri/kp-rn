@@ -6,13 +6,11 @@
 #include <botan/hmac.h>
 #include <botan/types.h>
 
-using namespace Botan;
-
 const char LogTag[] = "KpHelper";
 
 jbyteArray convertUIntArrayToJByteArray(
         JNIEnv *env,
-        const secure_vector<byte> &out
+        const Botan::secure_vector<Botan::byte> &out
 ) {
     auto outSize = (jsize) out.size();
     auto result = env->NewByteArray(outSize);
@@ -29,18 +27,18 @@ jbyteArray convertUIntArrayToJByteArray(
     return result;
 }
 
-secure_vector<byte> convertJByteArrayToVector(
+Botan::secure_vector<Botan::byte> convertJByteArrayToVector(
         JNIEnv *env,
         jbyteArray array
 ) {
-    secure_vector<byte> result;
+    Botan::secure_vector<Botan::byte> result;
 
     int arrayLength = env->GetArrayLength(array);
     if (arrayLength < 1) {
         return result;
     }
 
-    byte *arrayElements = reinterpret_cast<byte *>(env->GetByteArrayElements(array, nullptr));
+    Botan::byte *arrayElements = reinterpret_cast<Botan::byte *>(env->GetByteArrayElements(array, nullptr));
     if (arrayElements == nullptr) {
         return result;
     }
@@ -55,15 +53,15 @@ secure_vector<byte> convertJByteArrayToVector(
 }
 
 bool SymmetricCipher_aesKdf(
-        const secure_vector<byte> &key,
+        const Botan::secure_vector<Botan::byte> &key,
         int rounds,
-        secure_vector<byte> &data
+        Botan::secure_vector<Botan::byte> &data
 ) {
     try {
-        std::unique_ptr<BlockCipher> cipher(BlockCipher::create("AES-256"));
+        std::unique_ptr<Botan::BlockCipher> cipher(Botan::BlockCipher::create("AES-256"));
         cipher->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
 
-        secure_vector<uint8_t> out(data.begin(), data.end());
+        Botan::secure_vector<uint8_t> out(data.begin(), data.end());
         for (int i = 0; i < rounds; ++i) {
             cipher->encrypt(out);
         }
@@ -149,7 +147,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
     auto seed = convertJByteArrayToVector(env, seedArray);
     auto key = convertJByteArrayToVector(env, keyArray);
 
-    secure_vector<byte> out(key);
+    Botan::secure_vector<Botan::byte> out(key);
 
     if (SymmetricCipher_aesKdf(seed, rounds, out)) {
         return convertUIntArrayToJByteArray(env, out);
@@ -169,14 +167,14 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hash(
         return nullptr;
     }
 
-    std::unique_ptr<HashFunction> function;
+    std::unique_ptr<Botan::HashFunction> function;
 
     switch (static_cast<CryptoHashAlgorithm>(algorithm)) {
         case Sha256:
-            function = HashFunction::create("SHA-256");
+            function = Botan::HashFunction::create("SHA-256");
             break;
         case Sha512:
-            function = HashFunction::create("SHA-512");
+            function = Botan::HashFunction::create("SHA-512");
             break;
         default:
             return nullptr;
@@ -211,14 +209,14 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         return nullptr;
     }
 
-    std::unique_ptr<MessageAuthenticationCode> function;
+    std::unique_ptr<Botan::MessageAuthenticationCode> function;
 
     switch (static_cast<CryptoHashAlgorithm>(algorithm)) {
         case Sha256:
-            function = MessageAuthenticationCode::create("HMAC(SHA-256)");
+            function = Botan::MessageAuthenticationCode::create("HMAC(SHA-256)");
             break;
         case Sha512:
-            function = MessageAuthenticationCode::create("HMAC(SHA-512)");
+            function = Botan::MessageAuthenticationCode::create("HMAC(SHA-512)");
             break;
         default:
             return nullptr;
