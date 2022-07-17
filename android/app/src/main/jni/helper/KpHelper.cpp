@@ -10,50 +10,6 @@
 
 const char LogTag[] = "KpHelper";
 
-jbyteArray convertUIntArrayToJByteArray(
-        JNIEnv *env,
-        const Botan::secure_vector<Botan::byte> &out
-) {
-    auto outSize = (jsize) out.size();
-    auto result = env->NewByteArray(outSize);
-    if (result == nullptr) {
-        return nullptr;
-    }
-
-    jbyte fill[outSize];
-    for (int f = 0; f < outSize; f++) {
-        fill[f] = (jbyte) out[f];
-    }
-
-    env->SetByteArrayRegion(result, 0, outSize, fill);
-    return result;
-}
-
-Botan::secure_vector<Botan::byte> convertJByteArrayToVector(
-        JNIEnv *env,
-        jbyteArray array
-) {
-    Botan::secure_vector<Botan::byte> result;
-
-    int arrayLength = env->GetArrayLength(array);
-    if (arrayLength < 1) {
-        return result;
-    }
-
-    Botan::byte *arrayElements = reinterpret_cast<Botan::byte *>(env->GetByteArrayElements(array, nullptr));
-    if (arrayElements == nullptr) {
-        return result;
-    }
-
-    result.resize(arrayLength);
-
-    std::copy(arrayElements, arrayElements + arrayLength, result.begin());
-
-    env->ReleaseByteArrayElements(array, reinterpret_cast<jbyte *>(arrayElements), JNI_ABORT);
-
-    return result;
-}
-
 bool SymmetricCipher_aesKdf(
         const Botan::secure_vector<Botan::byte> &key,
         int rounds,
@@ -139,13 +95,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
         jbyteArray seedArray,
         jint rounds
 ) {
-    auto seed = convertJByteArrayToVector(env, seedArray);
+    auto seed = convertJbyteArrayToByteVector(env, seedArray);
     if (seed.empty()) {
         throwIllegalArgumentException(env, "Missing seed");
         return nullptr;
     }
 
-    auto key = convertJByteArrayToVector(env, keyArray);
+    auto key = convertJbyteArrayToByteVector(env, keyArray);
     if (key.empty()) {
         throwIllegalArgumentException(env, "Missing key");
         return nullptr;
@@ -154,7 +110,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
     Botan::secure_vector<Botan::byte> out(key);
 
     if (SymmetricCipher_aesKdf(seed, rounds, out)) {
-        return convertUIntArrayToJByteArray(env, out);
+        return convertByteVectorToJbyteArray(env, out);
     }
 
     return nullptr;
@@ -193,12 +149,12 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hash(
             return nullptr;
         }
 
-        auto data = convertJByteArrayToVector(env, chunkPointer);
+        auto data = convertJbyteArrayToByteVector(env, chunkPointer);
 
         function->update(reinterpret_cast<const uint8_t *>(data.data()), data.size());
     }
 
-    return convertUIntArrayToJByteArray(env, function->final());
+    return convertByteVectorToJbyteArray(env, function->final());
 }
 
 JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
@@ -214,7 +170,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
         return nullptr;
     }
 
-    auto key = convertJByteArrayToVector(env, keyArray);
+    auto key = convertJbyteArrayToByteVector(env, keyArray);
     if (key.empty()) {
         throwIllegalArgumentException(env, "Missing key");
         return nullptr;
@@ -243,12 +199,12 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
             return nullptr;
         }
 
-        auto data = convertJByteArrayToVector(env, chunkPointer);
+        auto data = convertJbyteArrayToByteVector(env, chunkPointer);
 
         function->update(reinterpret_cast<const uint8_t *>(data.data()), data.size());
     }
 
-    return convertUIntArrayToJByteArray(env, function->final());
+    return convertByteVectorToJbyteArray(env, function->final());
 }
 
 JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
@@ -260,19 +216,19 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
         jbyteArray ivArray,
         jbyteArray dataArray
 ) {
-    auto key = convertJByteArrayToVector(env, keyArray);
+    auto key = convertJbyteArrayToByteVector(env, keyArray);
     if (key.empty()) {
         throwIllegalArgumentException(env, "Missing key");
         return nullptr;
     }
 
-    auto iv = convertJByteArrayToVector(env, ivArray);
+    auto iv = convertJbyteArrayToByteVector(env, ivArray);
     if (iv.empty()) {
         throwIllegalArgumentException(env, "Missing IV");
         return nullptr;
     }
 
-    auto data = convertJByteArrayToVector(env, dataArray);
+    auto data = convertJbyteArrayToByteVector(env, dataArray);
     if (data.empty()) {
         throwIllegalArgumentException(env, "Missing data");
         return nullptr;
@@ -310,7 +266,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
 
         cipher->finish(data);
 
-        return convertUIntArrayToJByteArray(env, data);
+        return convertByteVectorToJbyteArray(env, data);
     } catch (...) {
         __android_log_print(
                 ANDROID_LOG_DEBUG,
