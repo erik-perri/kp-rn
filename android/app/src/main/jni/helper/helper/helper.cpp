@@ -146,22 +146,10 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_transformAesKdfKey(
         return nullptr;
     }
 
-    byte *seedData = reinterpret_cast<byte *>(env->GetByteArrayElements(seedArray, nullptr));
-    if (seedData == nullptr) {
-        return nullptr;
-    }
+    auto seed = convertJByteArrayToVector(env, seedArray);
+    auto key = convertJByteArrayToVector(env, keyArray);
 
-    byte *keyData = reinterpret_cast<byte *>(env->GetByteArrayElements(keyArray, nullptr));
-    if (keyData == nullptr) {
-        env->ReleaseByteArrayElements(seedArray, reinterpret_cast<jbyte *>(seedData), JNI_ABORT);
-        return nullptr;
-    }
-
-    secure_vector<byte> seed(seedData, seedData + seedSize);
-    secure_vector<byte> out(keyData, keyData + keySize);
-
-    env->ReleaseByteArrayElements(seedArray, reinterpret_cast<jbyte *>(seedData), JNI_ABORT);
-    env->ReleaseByteArrayElements(keyArray, reinterpret_cast<jbyte *>(keyData), JNI_ABORT);
+    secure_vector<byte> out(key);
 
     if (SymmetricCipher_aesKdf(seed, rounds, out)) {
         return convertUIntArrayToJByteArray(env, out);
@@ -236,7 +224,8 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_hmac(
             return nullptr;
     }
 
-    secure_vector<byte> key = convertJByteArrayToVector(env, keyArray);
+    auto key = convertJByteArrayToVector(env, keyArray);
+
     function->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
 
     for (int chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
@@ -271,9 +260,9 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
         return nullptr;
     }
 
-    secure_vector<byte> key = convertJByteArrayToVector(env, keyArray);
-    secure_vector<byte> iv = convertJByteArrayToVector(env, ivArray);
-    secure_vector<byte> data = convertJByteArrayToVector(env, dataArray);
+    auto key = convertJByteArrayToVector(env, keyArray);
+    auto iv = convertJByteArrayToVector(env, ivArray);
+    auto data = convertJByteArrayToVector(env, dataArray);
     if (key.empty() || iv.empty() || data.empty()) {
         return nullptr;
     }
@@ -285,9 +274,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
     }
     auto direction = static_cast<SymmetricCipherDirection>(cipherDirection);
     auto botanMode = SymmetricCipher_modeToString(mode);
-    auto botanDirection = direction == SymmetricCipherDirection::Encrypt
-                          ? Botan::ENCRYPTION
-                          : Botan::DECRYPTION;
+    auto botanDirection = direction == Encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION;
 
     auto cipher = Botan::Cipher_Mode::create_or_throw(botanMode, botanDirection);
 

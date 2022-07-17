@@ -35,7 +35,7 @@ export default class Kdbx4XmlReader {
     group: KeepPassGroup,
     randomStream: KeePass2RandomStream,
   ): Promise<KeepPassGroup> {
-    group.UUID[0] = this.decodeUuid(group.UUID[0]);
+    group.UUID[0] = Kdbx4XmlReader.decodeUuid(group.UUID[0]);
 
     if (group.Entry) {
       for (let entryIndex = 0; entryIndex < group.Entry.length; entryIndex++) {
@@ -62,7 +62,7 @@ export default class Kdbx4XmlReader {
     entry: KeePassEntry,
     randomStream: KeePass2RandomStream,
   ): Promise<KeePassEntry> {
-    entry.UUID[0] = this.decodeUuid(entry.UUID[0]);
+    entry.UUID[0] = Kdbx4XmlReader.decodeUuid(entry.UUID[0]);
 
     for (
       let stringIndex = 0;
@@ -80,7 +80,9 @@ export default class Kdbx4XmlReader {
       }
 
       entry.String[stringIndex].Value = [
-        value._ ? await this.decodeProtectedString(value._, randomStream) : '',
+        value._
+          ? await Kdbx4XmlReader.decodeProtectedString(value._, randomStream)
+          : '',
       ];
     }
 
@@ -111,11 +113,11 @@ export default class Kdbx4XmlReader {
     return entry;
   }
 
-  private decodeUuid(value: string): string {
+  private static decodeUuid(value: string): string {
     return stringify(Uint8ArrayWriter.fromBase64(value));
   }
 
-  private async decodeProtectedString(
+  private static async decodeProtectedString(
     value: string,
     randomStream: KeePass2RandomStream,
   ): Promise<string> {
