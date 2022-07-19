@@ -75,42 +75,69 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
       [SymmetricCipherMode, SymmetricCipherDirection, Uint8Array, Uint8Array]
     >()
     .mockImplementation(async (mode, direction, key, iv): Promise<Cipher> => {
-      if (mode === SymmetricCipherMode.ChaCha20) {
-        let cipher: Chacha20 | undefined = new Chacha20(key, iv);
+      switch (mode) {
+        case SymmetricCipherMode.ChaCha20: {
+          let cipher: Chacha20 | undefined = new Chacha20(key, iv);
 
-        return {
-          finish: async data => {
-            const result =
-              direction === SymmetricCipherDirection.Encrypt
-                ? cipher?.encrypt(data)
-                : cipher?.decrypt(data);
-            cipher = undefined;
-            return result ?? Uint8Array.from([]);
-          },
-          process: async data => {
-            return (
-              (direction === SymmetricCipherDirection.Encrypt
-                ? cipher?.encrypt(data)
-                : cipher?.decrypt(data)) ?? Uint8Array.from([])
-            );
-          },
-          destroy: async () => {},
-        };
+          return {
+            finish: async data => {
+              if (!cipher) {
+                throw new Error();
+              }
+              return direction === SymmetricCipherDirection.Encrypt
+                ? cipher.encrypt(data)
+                : cipher.decrypt(data);
+            },
+            process: async data => {
+              if (!cipher) {
+                throw new Error();
+              }
+              return direction === SymmetricCipherDirection.Encrypt
+                ? cipher.encrypt(data)
+                : cipher.decrypt(data);
+            },
+            destroy: async () => {
+              if (!cipher) {
+                throw new Error();
+              }
+              cipher = undefined;
+            },
+          };
+        }
+        case SymmetricCipherMode.Aes256_CBC: {
+          let cipher: crypto.Decipher | undefined = crypto
+            .createDecipheriv('aes-256-cbc', key, iv)
+            .setAutoPadding(true);
+
+          return {
+            process: async data => {
+              if (!cipher) {
+                throw new Error();
+              }
+              return Uint8Array.from(cipher.update(data));
+            },
+            finish: async data => {
+              if (!cipher) {
+                throw new Error();
+              }
+              return Uint8Array.from([
+                ...cipher.update(data),
+                ...cipher.final(),
+              ]);
+            },
+            destroy: async () => {
+              if (!cipher) {
+                throw new Error();
+              }
+              cipher = undefined;
+            },
+          };
+        }
+        default:
+          throw new Error(
+            `Cipher ${SymmetricCipherMode[mode]} (${mode}) not mocked`,
+          );
       }
-
-      const cipher = crypto
-        .createDecipheriv('aes-256-cbc', key, iv)
-        .setAutoPadding(true);
-
-      return {
-        process: async data => {
-          return Uint8Array.from(cipher.update(data));
-        },
-        finish: async data => {
-          return Uint8Array.from([...cipher.update(data), ...cipher.final()]);
-        },
-        destroy: async () => {},
-      };
     }),
 };
 
