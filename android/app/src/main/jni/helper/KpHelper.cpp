@@ -1,14 +1,19 @@
 #include <android/log.h>
 #include <jni.h>
+#include <botan/auto_rng.h>
 #include <botan/block_cipher.h>
 #include <botan/cipher_mode.h>
 #include <botan/hash.h>
 #include <botan/hmac.h>
 #include <botan/types.h>
+#include <botan/uuid.h>
+#include <map>
 
 #include "JniHelpers.h"
 
 const char LogTag[] = "KpHelper";
+
+std::map<std::string, std::unique_ptr<Botan::Cipher_Mode>> activeCiphers;
 
 bool SymmetricCipher_aesKdf(
         const Botan::secure_vector<Botan::byte> &key,
@@ -276,6 +281,173 @@ JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_cipher(
 
         return nullptr;
     }
+}
+
+JNIEXPORT jstring JNICALL Java_com_keepassrn_KpHelper_createCipher(
+        JNIEnv *env,
+        jclass,
+        jint cipherMode,
+        jint cipherDirection,
+        jbyteArray keyArray,
+        jbyteArray ivArray
+) {
+    auto key = convertJbyteArrayToByteVector(env, keyArray);
+    if (key.empty()) {
+        throwIllegalArgumentException(env, "Missing key");
+        return nullptr;
+    }
+
+    auto iv = convertJbyteArrayToByteVector(env, ivArray);
+    if (iv.empty()) {
+        throwIllegalArgumentException(env, "Missing IV");
+        return nullptr;
+    }
+
+    auto mode = static_cast<SymmetricCipherMode>(cipherMode);
+    if (mode == InvalidMode) {
+        throwIllegalArgumentException(env, "Invalid mode");
+        return nullptr;
+    }
+
+    auto direction = static_cast<SymmetricCipherDirection>(cipherDirection);
+    auto botanMode = SymmetricCipher_modeToString(mode);
+    auto botanDirection = direction == Encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION;
+
+    try {
+        auto cipher = Botan::Cipher_Mode::create_or_throw(botanMode, botanDirection);
+
+        cipher->set_key(reinterpret_cast<const uint8_t *>(key.data()), key.size());
+
+        if (!cipher->valid_nonce_length(iv.size())) {
+            __android_log_print(
+                    ANDROID_LOG_WARN,
+                    LogTag,
+                    "createCipher: Invalid IV size of %d for %s.",
+                    iv.size(),
+                    botanMode.data()
+            );
+
+            throwIllegalArgumentException(env, "Invalid IV size");
+            return nullptr;
+        }
+
+        cipher->start(reinterpret_cast<const uint8_t *>(iv.data()), iv.size());
+
+        Botan::AutoSeeded_RNG rng;
+        Botan::UUID randomUuid(rng);
+        auto cipherUuid = randomUuid.to_string();
+        activeCiphers[cipherUuid] = std::move(cipher);
+
+        __android_log_print(
+                ANDROID_LOG_DEBUG,
+                LogTag,
+                "createCipher: Created cipher %s",
+                cipherUuid.c_str()
+        );
+
+        return env->NewStringUTF(cipherUuid.c_str());
+    } catch (...) {
+        __android_log_print(
+                ANDROID_LOG_DEBUG,
+                LogTag,
+                "createCipher: Exception caught"
+        );
+
+        return nullptr;
+    }
+}
+
+JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_processCipher(
+        JNIEnv *env,
+        jclass,
+        jstring uuidString,
+        jbyteArray dataArray
+) {
+    auto uuid = convertJstringToString(env, uuidString);
+    if (uuid.empty()) {
+        throwIllegalArgumentException(env, "Missing UUID");
+        return nullptr;
+    }
+
+    auto data = convertJbyteArrayToByteVector(env, dataArray);
+    if (data.empty()) {
+        throwIllegalArgumentException(env, "Missing data");
+        return nullptr;
+    }
+
+    if (activeCiphers.find(uuid) == activeCiphers.end()) {
+        throwIllegalArgumentException(env, "Unknown UUID");
+        return nullptr;
+    }
+
+    try {
+        activeCiphers[uuid]->process(data.data(), data.size());
+    } catch (...) {
+        __android_log_print(
+                ANDROID_LOG_DEBUG,
+                LogTag,
+                "processCipher: Unknown exception caught"
+        );
+        return nullptr;
+    }
+
+    return convertByteVectorToJbyteArray(env, data);
+}
+
+JNIEXPORT jbyteArray JNICALL Java_com_keepassrn_KpHelper_finishCipher(
+        JNIEnv *env,
+        jclass,
+        jstring uuidString,
+        jbyteArray dataArray
+) {
+    auto uuid = convertJstringToString(env, uuidString);
+    if (uuid.empty()) {
+        throwIllegalArgumentException(env, "Missing UUID");
+        return nullptr;
+    }
+
+    auto data = convertJbyteArrayToByteVector(env, dataArray);
+    if (data.empty()) {
+        throwIllegalArgumentException(env, "Missing data");
+        return nullptr;
+    }
+
+    if (activeCiphers.find(uuid) == activeCiphers.end()) {
+        throwIllegalArgumentException(env, "Unknown UUID");
+        return nullptr;
+    }
+
+    try {
+        activeCiphers[uuid]->finish(data);
+    } catch (...) {
+        __android_log_print(
+                ANDROID_LOG_DEBUG,
+                LogTag,
+                "processCipher: Unknown exception caught"
+        );
+        return nullptr;
+    }
+
+    return convertByteVectorToJbyteArray(env, data);
+}
+
+JNIEXPORT void JNICALL Java_com_keepassrn_KpHelper_destroyCipher(
+        JNIEnv *env,
+        jclass,
+        jstring uuidString
+) {
+    auto uuid = convertJstringToString(env, uuidString);
+    if (uuid.empty()) {
+        throwIllegalArgumentException(env, "Missing UUID");
+        return;
+    }
+
+    if (activeCiphers.find(uuid) == activeCiphers.end()) {
+        throwIllegalArgumentException(env, "Unknown UUID");
+        return;
+    }
+
+    activeCiphers.erase(uuid);
 }
 
 }

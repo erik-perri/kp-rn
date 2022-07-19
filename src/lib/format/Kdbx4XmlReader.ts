@@ -1,4 +1,3 @@
-import KeePass2RandomStream from './KeePass2RandomStream';
 import {stringify} from 'uuid';
 import {
   isKeePassFile,
@@ -7,11 +6,12 @@ import {
   KeepPassGroup,
 } from './Kdbx4XmlTypes';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import {Cipher} from '../crypto/SymmetricCipher';
 
 export default class Kdbx4XmlReader {
   async decodeFile(
     parsedXml: unknown,
-    randomStream: KeePass2RandomStream,
+    randomStream: Cipher,
   ): Promise<KeePassFile> {
     if (!isKeePassFile(parsedXml)) {
       throw new Error('Unknown file format');
@@ -33,7 +33,7 @@ export default class Kdbx4XmlReader {
 
   private async decodeGroup(
     group: KeepPassGroup,
-    randomStream: KeePass2RandomStream,
+    randomStream: Cipher,
   ): Promise<KeepPassGroup> {
     group.UUID[0] = Kdbx4XmlReader.decodeUuid(group.UUID[0]);
 
@@ -60,7 +60,7 @@ export default class Kdbx4XmlReader {
 
   private async decodeEntry(
     entry: KeePassEntry,
-    randomStream: KeePass2RandomStream,
+    randomStream: Cipher,
   ): Promise<KeePassEntry> {
     entry.UUID[0] = Kdbx4XmlReader.decodeUuid(entry.UUID[0]);
 
@@ -119,7 +119,7 @@ export default class Kdbx4XmlReader {
 
   private static async decodeProtectedString(
     value: string,
-    randomStream: KeePass2RandomStream,
+    randomStream: Cipher,
   ): Promise<string> {
     const decrypted = await randomStream.process(
       Uint8ArrayWriter.fromBase64(value),

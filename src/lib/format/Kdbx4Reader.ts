@@ -82,7 +82,7 @@ export default class Kdbx4Reader extends KdbxReader {
           new Uint8ArrayReader(fieldData),
           0,
         );
-        const kdfParams = this.readVariantMap(kdfReader);
+        const kdfParams = Kdbx4Reader.readVariantMap(kdfReader);
 
         const kdf = kdfFromParameters(kdfParams);
         if (!kdf) {
@@ -97,7 +97,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
       case HeaderFieldId.PublicCustomData: {
         database.setPublicCustomData(
-          this.readVariantMap(
+          Kdbx4Reader.readVariantMap(
             new Uint8ArrayCursorReader(new Uint8ArrayReader(fieldData), 0),
           ),
         );
@@ -119,7 +119,9 @@ export default class Kdbx4Reader extends KdbxReader {
     return true;
   }
 
-  private readVariantMap(reader: Uint8ArrayCursorReader): VariantFieldMap {
+  private static readVariantMap(
+    reader: Uint8ArrayCursorReader,
+  ): VariantFieldMap {
     // eslint-disable-next-line no-bitwise
     const version = reader.readUInt16LE() & VARIANTMAP_CRITICAL_MASK;
 
@@ -292,8 +294,7 @@ export default class Kdbx4Reader extends KdbxReader {
       throw new Error(`Unknown cipher ${database.getCipher()}`);
     }
 
-    const cipher = new SymmetricCipher();
-    await cipher.init(
+    const cipher = await SymmetricCipher.create(
       mode,
       SymmetricCipherDirection.Decrypt,
       finalKey,
@@ -306,7 +307,7 @@ export default class Kdbx4Reader extends KdbxReader {
       readBytes = new Uint8Array([...readBytes, ...stream.getBuffer()]);
     }
 
-    readBytes = await cipher.process(readBytes);
+    readBytes = await cipher.finish(readBytes);
 
     const isCompressed =
       database.getCompressionAlgorithm() ===
@@ -321,8 +322,7 @@ export default class Kdbx4Reader extends KdbxReader {
       //
     }
 
-    const randomStream = new KeePass2RandomStream();
-    await randomStream.init(
+    const randomStream = await KeePass2RandomStream.create(
       this.getSymmetricCipherMode(),
       this.getProtectedStreamKey(),
     );
@@ -331,6 +331,9 @@ export default class Kdbx4Reader extends KdbxReader {
     const remaining = bufferReader.slice();
 
     await xmlReader.readDatabase(remaining, database, randomStream);
+
+    await randomStream.destroy();
+    await cipher.destroy();
 
     return database;
   }

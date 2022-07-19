@@ -1,6 +1,7 @@
 import {NativeModules} from 'react-native';
 import {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import {
+  Cipher,
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../crypto/SymmetricCipher';
@@ -31,6 +32,41 @@ export interface NativeHelperModule {
     iv: number[],
     data: number[],
   ): Promise<number[]>;
+
+  createCipher(
+    mode: number,
+    direction: number,
+    key: number[],
+    iv: number[],
+  ): Promise<string>;
+
+  processCipher(uuid: string, data: number[]): Promise<number[]>;
+
+  finishCipher(uuid: string, data: number[]): Promise<number[]>;
+
+  destroyCipher(uuid: string): Promise<boolean>;
+}
+
+class CipherHandler implements Cipher {
+  constructor(private module: NativeHelperModule, private uuid: string) {
+    //
+  }
+
+  async process(data: Uint8Array): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.processCipher(this.uuid, [...data]),
+    );
+  }
+
+  async finish(data: Uint8Array): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.finishCipher(this.uuid, [...data]),
+    );
+  }
+
+  async destroy(): Promise<void> {
+    await this.module.destroyCipher(this.uuid);
+  }
 }
 
 export class LocalHelperModule {
@@ -85,6 +121,18 @@ export class LocalHelperModule {
   ): Promise<Uint8Array> {
     return Uint8Array.from(
       await this.module.cipher(mode, direction, [...key], [...iv], [...data]),
+    );
+  }
+
+  async createCipher(
+    mode: SymmetricCipherMode,
+    direction: SymmetricCipherDirection,
+    key: Uint8Array,
+    iv: Uint8Array,
+  ): Promise<Cipher> {
+    return new CipherHandler(
+      this.module,
+      await this.module.createCipher(mode, direction, [...key], [...iv]),
     );
   }
 }

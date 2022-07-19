@@ -4,7 +4,6 @@ import {
   CIPHER_CHACHA20,
   CIPHER_TWOFISH,
 } from '../format/Keepass2';
-import {Chacha20} from 'ts-chacha20';
 import KpHelperModule from '../utilities/KpHelperModule';
 
 export enum SymmetricCipherDirection {
@@ -24,38 +23,29 @@ export enum SymmetricCipherMode {
   InvalidMode = -1,
 }
 
-export default class SymmetricCipher {
-  private mode?: SymmetricCipherMode;
-  private processor?: (data: Uint8Array) => Promise<Uint8Array>;
+export interface Cipher {
+  process(data: Uint8Array): Promise<Uint8Array>;
 
-  async init(
+  finish(data: Uint8Array): Promise<Uint8Array>;
+
+  destroy(): Promise<void>;
+}
+
+export default class SymmetricCipher {
+  static async create(
     mode: SymmetricCipherMode,
     direction: SymmetricCipherDirection,
     key: Uint8Array,
     iv: Uint8Array,
-  ): Promise<void> {
-    this.mode = mode;
+  ): Promise<Cipher> {
     if (mode === SymmetricCipherMode.InvalidMode) {
       throw new Error('SymmetricCipher::init: Invalid cipher mode.');
     }
 
     switch (mode) {
+      case SymmetricCipherMode.ChaCha20:
       case SymmetricCipherMode.Aes256_CBC: {
-        this.processor = async data => {
-          return await KpHelperModule.cipher(mode, direction, key, iv, data);
-        };
-        break;
-      }
-
-      case SymmetricCipherMode.ChaCha20: {
-        const cipher = new Chacha20(key, iv);
-
-        this.processor = async data => {
-          return direction === SymmetricCipherDirection.Encrypt
-            ? cipher.encrypt(data)
-            : cipher.decrypt(data);
-        };
-        break;
+        return await KpHelperModule.createCipher(mode, direction, key, iv);
       }
 
       default:
@@ -63,18 +53,6 @@ export default class SymmetricCipher {
           `Cipher ${SymmetricCipherMode[mode]} (${mode}) not implemented`,
         );
     }
-  }
-
-  async process(data: Uint8Array): Promise<Uint8Array> {
-    if (!this.processor) {
-      throw new Error('Cipher not initialized prior to use.');
-    }
-
-    if (data.byteLength === 0) {
-      throw new Error('Cannot process 0 length data.');
-    }
-
-    return await this.processor(data);
   }
 
   static cipherUuidToMode(uuid?: string): SymmetricCipherMode {

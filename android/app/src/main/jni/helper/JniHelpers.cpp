@@ -2,6 +2,7 @@
 #include <botan/types.h>
 #include <jni.h>
 #include <stdexcept>
+#include <string>
 
 jbyteArray convertByteVectorToJbyteArray(
         JNIEnv *env,
@@ -47,6 +48,20 @@ Botan::secure_vector<Botan::byte> convertJbyteArrayToByteVector(
     env->ReleaseByteArrayElements(array, reinterpret_cast<jbyte *>(arrayElements), JNI_ABORT);
 
     return result;
+}
+
+std::string convertJstringToString(JNIEnv *env, jstring str) {
+    auto pointer = env->GetStringChars(str, nullptr);
+    if (pointer == nullptr) {
+        return {};
+    }
+
+    int length = env->GetStringLength(str);
+    std::string asString(pointer, pointer + length);
+
+    env->ReleaseStringChars(str, pointer);
+
+    return asString;
 }
 
 jint throwException(JNIEnv *env, const char *message) {

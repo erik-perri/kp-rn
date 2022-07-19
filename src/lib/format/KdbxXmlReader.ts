@@ -1,8 +1,8 @@
 import {parseStringPromise} from 'xml2js';
 import {Database} from '../core/Database';
-import KeePass2RandomStream from './KeePass2RandomStream';
 import {FILE_VERSION_4} from './Keepass2';
 import Kdbx4XmlReader from './Kdbx4XmlReader';
+import {Cipher} from '../crypto/SymmetricCipher';
 
 export default class KdbxXmlReader {
   constructor(
@@ -17,7 +17,7 @@ export default class KdbxXmlReader {
   async readDatabase(
     data: Uint8Array,
     database: Database,
-    randomStream: KeePass2RandomStream,
+    randomStream: Cipher,
   ): Promise<void> {
     const parsedXml = await parseStringPromise(String.fromCharCode(...data), {
       emptyTag: undefined,

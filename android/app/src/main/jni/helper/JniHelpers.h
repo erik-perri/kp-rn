@@ -11,6 +11,8 @@ Botan::secure_vector<Botan::byte> convertJbyteArrayToByteVector(
         jbyteArray array
 );
 
+std::string convertJstringToString(JNIEnv *env, jstring str);
+
 jint throwException(JNIEnv *env, const char *message);
 
 jint throwIllegalArgumentException(JNIEnv *env, const char *message);

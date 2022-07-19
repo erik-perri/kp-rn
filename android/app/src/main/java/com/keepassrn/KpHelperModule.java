@@ -132,6 +132,72 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void createCipher(
+            double mode,
+            double direction,
+            ReadableArray key,
+            ReadableArray iv,
+            Promise promise
+    ) {
+        try {
+            String uuid = KpHelper.createCipher(
+                    (int) mode,
+                    (int) direction,
+                    getBytesFromArray(key),
+                    getBytesFromArray(iv)
+            );
+
+            promise.resolve(uuid);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void processCipher(
+            String uuid,
+            ReadableArray data,
+            Promise promise
+    ) {
+        try {
+            byte[] processed = KpHelper.processCipher(uuid, getBytesFromArray(data));
+
+            promise.resolve(getArrayFromBytes(processed));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void finishCipher(
+            String uuid,
+            ReadableArray data,
+            Promise promise
+    ) {
+        try {
+            byte[] processed = KpHelper.finishCipher(uuid, getBytesFromArray(data));
+
+            promise.resolve(getArrayFromBytes(processed));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void destroyCipher(
+            String uuid,
+            Promise promise
+    ) {
+        try {
+            KpHelper.destroyCipher(uuid);
+
+            promise.resolve(null);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
     private byte[] getBytesFromArray(ReadableArray array) throws Exception {
         int size = array.size();
         byte[] result = new byte[size];

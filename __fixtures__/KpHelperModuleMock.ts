@@ -2,9 +2,11 @@ import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
 import {CryptoHashAlgorithm} from '../src/lib/crypto/CryptoHash';
 import {
+  Cipher,
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../src/lib/crypto/SymmetricCipher';
+import {Chacha20} from 'ts-chacha20';
 
 const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
   readFile: jest.fn().mockResolvedValue([]),
@@ -66,6 +68,49 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
         .setAutoPadding(true);
 
       return Uint8Array.from([...cipher.update(data), ...cipher.final()]);
+    }),
+  createCipher: jest
+    .fn<
+      Promise<Cipher>,
+      [SymmetricCipherMode, SymmetricCipherDirection, Uint8Array, Uint8Array]
+    >()
+    .mockImplementation(async (mode, direction, key, iv): Promise<Cipher> => {
+      if (mode === SymmetricCipherMode.ChaCha20) {
+        let cipher: Chacha20 | undefined = new Chacha20(key, iv);
+
+        return {
+          finish: async data => {
+            const result =
+              direction === SymmetricCipherDirection.Encrypt
+                ? cipher?.encrypt(data)
+                : cipher?.decrypt(data);
+            cipher = undefined;
+            return result ?? Uint8Array.from([]);
+          },
+          process: async data => {
+            return (
+              (direction === SymmetricCipherDirection.Encrypt
+                ? cipher?.encrypt(data)
+                : cipher?.decrypt(data)) ?? Uint8Array.from([])
+            );
+          },
+          destroy: async () => {},
+        };
+      }
+
+      const cipher = crypto
+        .createDecipheriv('aes-256-cbc', key, iv)
+        .setAutoPadding(true);
+
+      return {
+        process: async data => {
+          return Uint8Array.from(cipher.update(data));
+        },
+        finish: async data => {
+          return Uint8Array.from([...cipher.update(data), ...cipher.final()]);
+        },
+        destroy: async () => {},
+      };
     }),
 };
 
