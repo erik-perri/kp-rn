@@ -3,6 +3,7 @@ module.exports = {
   extends: '@react-native-community',
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
+  ignorePatterns: ['coverage/*', 'node_modules/*', '**/build/*'],
   overrides: [
     {
       files: ['*.ts', '*.tsx'],
