@@ -5,10 +5,11 @@ import CompositeKey from '../../../src/lib/keys/CompositeKey';
 import FileKey from '../../../src/lib/keys/FileKey';
 
 describe('Kbd4Reader', () => {
-  it('can read a database', async () => {
-    const databaseFile = fs.readFileSync(
-      '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
-    );
+  it.each([
+    '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
+    '__fixtures__/sample-aes256-chacha20-kdf-kdbx4.kdbx',
+  ])('can read a database %s', async file => {
+    const databaseFile = fs.readFileSync(file);
 
     const password = new PasswordKey();
     await password.setPassword('sample');
