@@ -58,7 +58,7 @@ export class XmlReader {
     this.readNextStartElement();
   }
 
-  readElementText(): string | undefined {
+  readElementText(): string {
     if (!this.currentElement.isOpen) {
       throw new Error(
         `Cannot read text from non-open element "${this.currentElement.name}"`,
@@ -122,22 +122,14 @@ export class XmlReader {
   }
 
   private readNextTag(): Element | undefined {
-    let startIndex: number = this.currentPosition;
-    while (this.contents[startIndex] !== '<') {
-      startIndex++;
-
-      if (startIndex > this.totalSize) {
-        return undefined;
-      }
+    const startIndex: number = this.contents.indexOf('<', this.currentPosition);
+    if (startIndex === -1) {
+      return undefined;
     }
 
-    let endIndex = startIndex + 1;
-    while (this.contents[endIndex] !== '>') {
-      endIndex++;
-
-      if (endIndex > this.totalSize) {
-        return undefined;
-      }
+    const endIndex: number = this.contents.indexOf('>', startIndex);
+    if (endIndex === -1) {
+      return undefined;
     }
 
     this.currentPosition = endIndex + 1;
