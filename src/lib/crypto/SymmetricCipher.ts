@@ -44,6 +44,7 @@ export default class SymmetricCipher {
 
     switch (mode) {
       case SymmetricCipherMode.ChaCha20:
+      case SymmetricCipherMode.Twofish_CBC:
       case SymmetricCipherMode.Aes256_CBC: {
         return await KpHelperModule.createCipher(mode, direction, key, iv);
       }
