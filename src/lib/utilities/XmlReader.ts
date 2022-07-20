@@ -10,7 +10,6 @@ interface Element {
 }
 
 export class XmlReader {
-  private currentPosition: number = 0;
   private readonly totalSize: number = 0;
   private currentElement: Element;
 
@@ -19,22 +18,18 @@ export class XmlReader {
     this.currentElement = this.readMetaElement();
   }
 
-  get current(): Element {
+  current(): Element {
     return this.currentElement;
   }
 
-  get position(): number {
-    return this.currentPosition;
-  }
-
   readNextStartElement(): boolean {
-    let nextStart = this.readNextTag();
+    let nextStart = this.readNextTag(this.currentElement.position[1]);
     if (!nextStart) {
       return false;
     }
 
     while (nextStart.isClose) {
-      nextStart = this.readNextTag();
+      nextStart = this.readNextTag(nextStart.position[1]);
       if (!nextStart) {
         return false;
       }
@@ -53,6 +48,8 @@ export class XmlReader {
           `Unable to find end "${this.currentElement.name}" element`,
         );
       }
+
+      this.currentElement = endTag;
     }
 
     this.readNextStartElement();
@@ -80,27 +77,31 @@ export class XmlReader {
 
   private findEndOfCurrentElement(): Element | undefined {
     let openChildTags = 0;
-    let endTag = this.readNextTag();
+    let endTag = this.readNextTag(this.current().position[1]);
     if (!endTag) {
       return undefined;
     }
 
-    while (endTag.name !== this.currentElement.name) {
-      const nextTag = this.readNextTag();
-      if (!nextTag) {
+    if (endTag.name === this.currentElement.name && endTag.isClose) {
+      return endTag;
+    }
+
+    while (true) {
+      endTag = this.readNextTag(endTag.position[1]);
+      if (!endTag) {
         return undefined;
       }
 
-      if (nextTag.name === this.currentElement.name) {
-        if (nextTag.isOpen) {
+      if (endTag.name === this.currentElement.name) {
+        if (endTag.isOpen) {
           openChildTags++;
+          continue;
+        }
+
+        if (openChildTags) {
+          openChildTags--;
         } else {
-          if (openChildTags) {
-            openChildTags--;
-          } else {
-            endTag = nextTag;
-            break;
-          }
+          break;
         }
       }
     }
@@ -113,7 +114,7 @@ export class XmlReader {
   }
 
   private readMetaElement(): Element {
-    const meta = this.readNextTag();
+    const meta = this.readNextTag(0);
     if (!meta?.isMeta) {
       throw new Error('Missing XML header');
     }
@@ -121,8 +122,8 @@ export class XmlReader {
     return meta;
   }
 
-  private readNextTag(): Element | undefined {
-    const startIndex: number = this.contents.indexOf('<', this.currentPosition);
+  private readNextTag(startPosition: number): Element | undefined {
+    const startIndex: number = this.contents.indexOf('<', startPosition);
     if (startIndex === -1) {
       return undefined;
     }
@@ -131,8 +132,6 @@ export class XmlReader {
     if (endIndex === -1) {
       return undefined;
     }
-
-    this.currentPosition = endIndex + 1;
 
     const position: [number, number] = [startIndex, endIndex + 1];
     let tagInside = this.contents.slice(startIndex + 1, endIndex);

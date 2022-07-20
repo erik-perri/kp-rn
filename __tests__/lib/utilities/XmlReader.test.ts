@@ -6,13 +6,17 @@ describe('XmlReader', () => {
       const header = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
       const sut = new XmlReader(header + '\n' + '<KeePassFile />');
 
-      expect(sut.position).toEqual(header.length);
-      expect(sut.current.name).toEqual('xml');
-      expect(sut.current.isMeta).toEqual(true);
-      expect(sut.current.attributes).toEqual({
-        version: '1.0',
-        encoding: 'UTF-8',
-        standalone: 'yes',
+      expect(sut.current()).toEqual({
+        name: 'xml',
+        isClose: false,
+        isOpen: false,
+        isMeta: true,
+        attributes: {
+          version: '1.0',
+          encoding: 'UTF-8',
+          standalone: 'yes',
+        },
+        position: [0, header.length],
       });
     });
 
@@ -34,7 +38,7 @@ describe('XmlReader', () => {
       const sut = new XmlReader(xml);
 
       sut.readNextStartElement();
-      expect(sut.current).toEqual({
+      expect(sut.current()).toEqual({
         name: 'KeePassFile',
         isOpen: true,
         isClose: false,
@@ -44,7 +48,7 @@ describe('XmlReader', () => {
       });
 
       sut.readNextStartElement();
-      expect(sut.current).toEqual({
+      expect(sut.current()).toEqual({
         name: 'Meta',
         isOpen: true,
         isClose: false,
@@ -69,7 +73,7 @@ describe('XmlReader', () => {
       sut.readNextStartElement();
 
       sut.readNextStartElement();
-      expect(sut.current).toEqual({
+      expect(sut.current()).toEqual({
         name: 'Generator',
         isOpen: true,
         isClose: false,
@@ -79,7 +83,7 @@ describe('XmlReader', () => {
       });
 
       sut.readNextStartElement();
-      expect(sut.current).toEqual({
+      expect(sut.current()).toEqual({
         name: 'DatabaseName',
         isOpen: true,
         isClose: false,
@@ -98,7 +102,7 @@ describe('XmlReader', () => {
       sut.readNextStartElement();
 
       sut.readNextStartElement();
-      expect(sut.current).toEqual(
+      expect(sut.current()).toEqual(
         expect.objectContaining({
           name: 'Tag',
           isOpen: false,
@@ -173,10 +177,10 @@ describe('XmlReader', () => {
 
       sut.readNextStartElement();
       sut.readNextStartElement();
-      expect(sut.current?.name).toEqual('Child');
+      expect(sut.current().name).toEqual('Child');
 
       sut.skipCurrentElement();
-      expect(sut.current?.name).toEqual('Root');
+      expect(sut.current().name).toEqual('Root');
     });
 
     it('skips past child of the same type', () => {
@@ -193,10 +197,10 @@ describe('XmlReader', () => {
       );
 
       sut.readNextStartElement();
-      expect(sut.current?.name).toEqual('Meta');
+      expect(sut.current().name).toEqual('Meta');
 
       sut.skipCurrentElement();
-      expect(sut.current?.name).toEqual('Root');
+      expect(sut.current().name).toEqual('Root');
     });
 
     it('skips past not open elements', () => {
@@ -205,10 +209,10 @@ describe('XmlReader', () => {
       );
 
       sut.readNextStartElement();
-      expect(sut.current?.name).toEqual('ElementOne');
+      expect(sut.current().name).toEqual('ElementOne');
 
       sut.skipCurrentElement();
-      expect(sut.current?.name).toEqual('ElementTwo');
+      expect(sut.current().name).toEqual('ElementTwo');
     });
 
     it('throws an error if element is not properly closed', () => {
@@ -217,7 +221,7 @@ describe('XmlReader', () => {
       );
 
       sut.readNextStartElement();
-      expect(sut.current?.name).toEqual('ElementOne');
+      expect(sut.current().name).toEqual('ElementOne');
 
       expect(() => sut.skipCurrentElement()).toThrow(
         /Unable to find end "ElementOne" element/,
