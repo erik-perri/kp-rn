@@ -14,6 +14,11 @@ import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 
+import org.signal.argon2.Argon2;
+import org.signal.argon2.MemoryCost;
+import org.signal.argon2.Type;
+import org.signal.argon2.Version;
+
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -69,6 +74,35 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             );
 
             promise.resolve(getArrayFromBytes(transformedBytes));
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void transformArgon2KdfKey(
+            ReadableArray key,
+            ReadableArray salt,
+            double version, // 0x10, 0x13
+            double type,  // 0 = 2D, 1 = 2ID
+            double memory,
+            double parallelism,
+            double iterations,
+            Promise promise
+    ) {
+        try {
+            Argon2 argon2 = new Argon2.Builder(version == 0x13 ? Version.V13 : Version.V10)
+                    .type(type == 0 ? Type.Argon2d : Type.Argon2id)
+                    .memoryCost(MemoryCost.KiB((int) memory))
+                    .parallelism((int) parallelism)
+                    .iterations((int) iterations)
+                    .build();
+
+            byte[] keyBytes = getBytesFromArray(key);
+            byte[] saltBytes = getBytesFromArray(salt);
+            Argon2.Result result = argon2.hash(keyBytes, saltBytes);
+
+            promise.resolve(getArrayFromBytes(result.getHash()));
         } catch (Exception e) {
             promise.reject(e);
         }

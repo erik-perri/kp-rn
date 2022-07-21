@@ -4,6 +4,7 @@ import {stringify as uuidStringify} from 'uuid';
 import AesKdf from '../crypto/kdf/AesKdf';
 import {UUID_SIZE} from '../utilities/sizes';
 import {BigInteger} from 'big-integer';
+import Argon2Kdf, {Argon2Type} from '../crypto/kdf/Argon2Kdf';
 
 export const SIGNATURE_1 = 0x9aa2d903;
 export const SIGNATURE_2 = 0xb54bfb67;
@@ -59,10 +60,10 @@ function uuidToKdf(uuid: string): Kdf | undefined {
     return new AesKdf();
   }
   if (uuid === KDF_ARGON2D) {
-    throw new Error('Not implemented');
+    return new Argon2Kdf(Argon2Type.Argon2d);
   }
   if (uuid === KDF_ARGON2ID) {
-    throw new Error('Not implemented');
+    return new Argon2Kdf(Argon2Type.Argon2id);
   }
 
   return undefined;

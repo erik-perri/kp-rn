@@ -5,13 +5,24 @@ import {
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../crypto/SymmetricCipher';
+import {Argon2Type, Argon2Version} from '../crypto/kdf/Argon2Kdf';
 
 const {KpHelperModule} = NativeModules;
 
 export interface NativeHelperModule {
   transformAesKdfKey(
-    key: Uint8Array | number[],
-    seed: Uint8Array | number[],
+    key: number[],
+    seed: number[],
+    iterations: number,
+  ): Promise<number[]>;
+
+  transformArgon2KdfKey(
+    key: number[],
+    salt: number[],
+    version: Argon2Version,
+    type: Argon2Type,
+    memory: number,
+    parallelism: number,
     iterations: number,
   ): Promise<number[]>;
 
@@ -79,6 +90,28 @@ export class LocalHelperModule {
   ): Promise<Uint8Array> {
     return Uint8Array.from(
       await this.module.transformAesKdfKey([...key], [...seed], iterations),
+    );
+  }
+
+  async transformArgon2KdfKey(
+    key: Uint8Array,
+    salt: Uint8Array,
+    version: Argon2Version,
+    type: Argon2Type,
+    memory: number,
+    parallelism: number,
+    iterations: number,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.transformArgon2KdfKey(
+        [...key],
+        [...salt],
+        version,
+        type,
+        memory,
+        parallelism,
+        iterations,
+      ),
     );
   }
 
