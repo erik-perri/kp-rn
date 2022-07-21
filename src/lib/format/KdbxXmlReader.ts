@@ -46,9 +46,7 @@ export default class KdbxXmlReader {
     let rootElementFound = false;
 
     while (reader.readNextStartElement()) {
-      const current = reader.current();
-
-      switch (current.name) {
+      switch (reader.current().name) {
         case 'Meta':
           await this.parseMeta(reader.readFromCurrent(), database);
           break;
@@ -187,23 +185,22 @@ export default class KdbxXmlReader {
       throw new Error(`Expected "Root", found "${reader.current().name}"`);
     }
 
-    let groupElementFound = false;
-
     while (reader.readNextStartElement()) {
-      if (reader.current().name === 'Group') {
-        if (groupElementFound) {
-          throw new Error('Multiple group elements');
-        }
+      switch (reader.current().name) {
+        case 'Group':
+          if (database.rootGroup) {
+            throw new Error('Multiple group elements');
+          }
 
-        database.rootGroup = await this.parseGroup(reader.readFromCurrent());
-
-        reader.skipCurrentElement();
-
-        groupElementFound = true;
-      } else if (reader.current().name === 'DeletedObjects') {
-        // parseDeletedObjects();
-      } else {
-        reader.skipCurrentElement();
+          database.rootGroup = await this.parseGroup(reader.readFromCurrent());
+          reader.skipCurrentElement();
+          break;
+        case 'DeletedObjects':
+          // parseDeletedObjects();
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
       }
     }
   }
