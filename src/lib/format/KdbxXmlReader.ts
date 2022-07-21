@@ -152,24 +152,14 @@ export default class KdbxXmlReader {
         case 'LastTopVisibleGroup':
           database.metadata.lastTopVisibleGroup = await this.readUuid(reader);
           break;
-        case 'HistoryMaxItems': {
-          const value = KdbxXmlReader.readNumber(reader);
-          if (value >= -1) {
-            database.metadata.historyMaxItems = value;
-          } else {
-            throw new Error('HistoryMaxItems invalid number');
-          }
+        case 'HistoryMaxItems':
+          database.metadata.historyMaxItems =
+            KdbxXmlReader.readUnsignedNumber(reader);
           break;
-        }
-        case 'HistoryMaxSize': {
-          const value = KdbxXmlReader.readNumber(reader);
-          if (value >= -1) {
-            database.metadata.historyMaxSize = value;
-          } else {
-            throw new Error('HistoryMaxSize invalid number');
-          }
+        case 'HistoryMaxSize':
+          database.metadata.historyMaxSize =
+            KdbxXmlReader.readUnsignedNumber(reader);
           break;
-        }
         case 'Binaries':
           throw new Error('"Binaries" not implemented');
         case 'CustomData':
@@ -693,6 +683,20 @@ export default class KdbxXmlReader {
   private static readNumber(reader: XmlReader, radix: number = 10): number {
     const text = reader.readElementText();
     return parseInt(text, radix);
+  }
+
+  private static readUnsignedNumber(
+    reader: XmlReader,
+    radix: number = 10,
+  ): number {
+    const text = reader.readElementText();
+    const value = parseInt(text, radix);
+
+    if (value < 0) {
+      throw new Error(`Invalid unsigned number "${text}"`);
+    }
+
+    return value;
   }
 
   private async readUuid(reader: XmlReader): Promise<Uuid> {
