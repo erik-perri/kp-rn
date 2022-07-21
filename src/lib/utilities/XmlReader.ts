@@ -34,7 +34,9 @@ export class XmlReader {
   }
 
   readFromCurrent(): XmlReader {
-    const endTag = this.findEndOfCurrentElement();
+    const endTag = this.currentElement.isClose
+      ? this.currentElement
+      : this.findEndOfCurrentElement();
     if (endTag?.name !== this.currentElement.name) {
       throw new Error(
         `Unable to find end "${this.currentElement.name}" element`,

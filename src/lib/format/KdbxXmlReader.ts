@@ -241,7 +241,10 @@ export default class KdbxXmlReader {
     return group;
   }
 
-  private async parseEntry(reader: XmlReader): Promise<Entry> {
+  private async parseEntry(
+    reader: XmlReader,
+    isInHistory: boolean = false,
+  ): Promise<Entry> {
     if (!reader.current().isOpen || reader.current().name !== 'Entry') {
       throw new Error(`Expected "Entry", found "${reader.current().name}"`);
     }
@@ -259,7 +262,7 @@ export default class KdbxXmlReader {
           }
           break;
         }
-        case 'String':
+        case 'String': {
           const [key, value, isProtected] = await this.parseEntryString(
             reader.readFromCurrent(),
           );
@@ -270,6 +273,15 @@ export default class KdbxXmlReader {
           if (isProtected) {
             entry.protectedAttributes.push(key);
           }
+          break;
+        }
+        case 'History':
+          if (isInHistory) {
+            throw new Error('History element in history entry');
+          }
+          entry.history = await this.parseHistoryItems(
+            reader.readFromCurrent(),
+          );
           break;
         default:
           reader.skipCurrentElement();
@@ -284,6 +296,28 @@ export default class KdbxXmlReader {
     entry.uuid = uuid;
 
     return entry;
+  }
+
+  private async parseHistoryItems(reader: XmlReader): Promise<Entry[]> {
+    if (!reader.current().isOpen || reader.current().name !== 'History') {
+      throw new Error(`Expected "History", found "${reader.current().name}"`);
+    }
+
+    const history: Entry[] = [];
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Entry':
+          history.push(await this.parseEntry(reader.readFromCurrent(), true));
+          break;
+        default:
+          break;
+      }
+
+      reader.skipCurrentElement();
+    }
+
+    return history;
   }
 
   private async parseEntryString(

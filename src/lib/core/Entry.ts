@@ -5,6 +5,7 @@ export default class Entry {
   private _attributes: Record<string, string> = {};
   private _protectedAttributes: string[] = [];
   private _attachments: Record<string, Uint8Array> = {};
+  private _history: Entry[] = [];
 
   get uuid(): Uuid {
     if (this._uuid === undefined) {
@@ -27,5 +28,13 @@ export default class Entry {
 
   get attachments(): Record<string, Uint8Array> {
     return this._attachments;
+  }
+
+  set history(value: Entry[]) {
+    this._history = value;
+  }
+
+  get history(): Entry[] {
+    return this._history;
   }
 }
