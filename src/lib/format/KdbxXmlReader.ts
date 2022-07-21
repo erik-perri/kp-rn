@@ -1,6 +1,6 @@
 import {stringify as uuidStringify} from 'uuid';
 
-import {Database} from '../core/Database';
+import {Database, DeletedObject} from '../core/Database';
 import Entry from '../core/Entry';
 import Group from '../core/Group';
 import TimeInfo from '../core/TimeInfo';
@@ -194,15 +194,15 @@ export default class KdbxXmlReader {
           }
 
           database.rootGroup = await this.parseGroup(reader.readFromCurrent());
-          reader.skipCurrentElement();
           break;
         case 'DeletedObjects':
-          // parseDeletedObjects();
-          break;
-        default:
-          reader.skipCurrentElement();
+          database.deletedObjects = await this.parseDeletedObjects(
+            reader.readFromCurrent(),
+          );
           break;
       }
+
+      reader.skipCurrentElement();
     }
   }
 
@@ -261,6 +261,64 @@ export default class KdbxXmlReader {
     }
 
     return group;
+  }
+
+  private async parseDeletedObjects(
+    reader: XmlReader,
+  ): Promise<DeletedObject[]> {
+    if (
+      !reader.current().isOpen ||
+      reader.current().name !== 'DeletedObjects'
+    ) {
+      throw new Error(
+        `Expected "DeletedObjects", found "${reader.current().name}"`,
+      );
+    }
+
+    const objects: DeletedObject[] = [];
+
+    if (reader.current().isClose) {
+      return objects;
+    }
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'DeletedObject':
+          objects.push(await this.parseDeletedObject(reader.readFromCurrent()));
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return objects;
+  }
+
+  private async parseDeletedObject(reader: XmlReader): Promise<DeletedObject> {
+    if (!reader.current().isOpen || reader.current().name !== 'DeletedObject') {
+      throw new Error(
+        `Expected "DeletedObject", found "${reader.current().name}"`,
+      );
+    }
+
+    const deleted: DeletedObject = {};
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'UUID':
+          deleted.uuid = await this.readUuid(reader);
+          break;
+        case 'DeletionTime':
+          deleted.deletionTime = await KdbxXmlReader.readDateTime(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return deleted;
   }
 
   private async parseEntry(

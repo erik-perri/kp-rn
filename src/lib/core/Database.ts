@@ -19,11 +19,18 @@ export function toCompressionAlgorithm(id: number): id is CompressionAlgorithm {
   );
 }
 
+export interface DeletedObject {
+  uuid?: Uuid;
+  deletionTime?: Date;
+}
+
 export class Database {
   readonly metadata: Metadata;
   readonly data: DatabaseData;
 
   public rootGroup?: Group;
+  public deletedObjects: DeletedObject[] = [];
+
   private cipher?: string;
   private formatVersion?: number;
 
