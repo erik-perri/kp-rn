@@ -6,50 +6,57 @@ import FileKey from '../../../src/lib/keys/FileKey';
 
 describe('Kbd4Reader', () => {
   it.each([
-    '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
-    '__fixtures__/sample-aes256-chacha20-kdf-kdbx4.kdbx',
-  ])('can read a database %s', async file => {
+    {
+      file: '__fixtures__/sample-aes256-aes-kdf-kdbx4.kdbx',
+      keyFactory: async () => {
+        const password = new PasswordKey();
+        await password.setPassword('sample');
+        return [password];
+      },
+    },
+    {
+      file: '__fixtures__/sample-aes256-chacha20-kdf-kdbx4.kdbx',
+      keyFactory: async () => {
+        const password = new PasswordKey();
+        await password.setPassword('sample');
+        return [password];
+      },
+    },
+    {
+      file: '__fixtures__/sample-aes256-aes-kdf-with-key-kdbx4.kdbx',
+      keyFactory: async () => {
+        const databaseKey = fs.readFileSync('__fixtures__/sample.key');
+        const key = new FileKey();
+
+        await key.load(databaseKey);
+
+        const password = new PasswordKey();
+        await password.setPassword('sample');
+
+        return [password, key];
+      },
+    },
+  ])('can read a database %s', async ({file, keyFactory}) => {
     const databaseFile = fs.readFileSync(file);
 
-    const password = new PasswordKey();
-    await password.setPassword('sample');
-
+    const keys = await keyFactory();
     const reader = new Kdbx4Reader();
     const database = await reader.readDatabase(
       databaseFile,
-      new CompositeKey([password]),
+      new CompositeKey(keys),
     );
 
     expect(database.metadata.generator).toEqual('KeePassXC');
     expect(database.metadata.databaseName).toEqual('Sample');
-  });
-
-  it('can read a database using a file key', async () => {
-    const databaseFile = fs.readFileSync(
-      '__fixtures__/sample-aes256-aes-kdf-with-key-kdbx4.kdbx',
+    expect(database.rootGroup?.entries?.[0]?.attributes?.Password).toEqual(
+      'password',
     );
-    const databaseKey = fs.readFileSync('__fixtures__/sample.key');
-    const key = new FileKey();
-
-    expect(await key.load(databaseKey)).toEqual(true);
-    expect(await key.getRawKey()).toEqualUint8Array(
-      Uint8Array.from([
-        0x96, 0xca, 0xca, 0x11, 0xa1, 0x9b, 0xa6, 0x49, 0xf1, 0xb, 0x34, 0x58,
-        0xd3, 0xa6, 0x7f, 0x39, 0x8c, 0x57, 0x7e, 0x6, 0x27, 0xb4, 0x5c, 0x86,
-        0x91, 0xf9, 0xc0, 0x59, 0x41, 0xcf, 0x5a, 0x90,
-      ]),
-    );
-
-    const password = new PasswordKey();
-    await password.setPassword('sample');
-
-    const reader = new Kdbx4Reader();
-    const database = await reader.readDatabase(
-      databaseFile,
-      new CompositeKey([password, key]),
-    );
-
-    expect(database.metadata.generator).toEqual('KeePassXC');
-    expect(database.metadata.databaseName).toEqual('Sample');
+    expect(
+      database.rootGroup?.entries?.[0]?.attributes?.['Protected Attribute'],
+    ).toEqual('Protected');
+    expect(database.rootGroup?.entries?.[0]?.protectedAttributes).toEqual([
+      'Password',
+      'Protected Attribute',
+    ]);
   });
 });
