@@ -309,6 +309,8 @@ export default class Kdbx4Reader extends KdbxReader {
 
     readBytes = await cipher.finish(readBytes);
 
+    await cipher.destroy();
+
     const isCompressed =
       database.getCompressionAlgorithm() ===
       CompressionAlgorithm.CompressionGZip;
@@ -337,7 +339,6 @@ export default class Kdbx4Reader extends KdbxReader {
     await xmlReader.readDatabase(remaining, database);
 
     await randomStream.destroy();
-    await cipher.destroy();
 
     return database;
   }
