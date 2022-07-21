@@ -1,7 +1,9 @@
+import Icon from './Icon';
 import {Uuid} from './types';
 
 interface Metadata {
   color?: string;
+  customIcons: Record<Uuid, Icon>;
   defaultUserName?: string;
   defaultUserNameChanged?: Date;
   description?: string;
@@ -20,6 +22,11 @@ interface Metadata {
   masterKeyChangeRec?: number;
   name?: string;
   nameChanged?: Date;
+  protectNotes?: boolean;
+  protectPassword?: boolean;
+  protectTitle?: boolean;
+  protectURL?: boolean;
+  protectUserName?: boolean;
   recycleBinChanged?: Date;
   recycleBinEnabled?: boolean;
   recycleBinUuid?: Uuid;

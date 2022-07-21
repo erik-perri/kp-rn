@@ -3,6 +3,7 @@ import {stringify as uuidStringify} from 'uuid';
 import {Database, DeletedObject} from '../core/Database';
 import Entry from '../core/Entry';
 import Group from '../core/Group';
+import Icon from '../core/Icon';
 import TimeInfo from '../core/TimeInfo';
 import {Uuid} from '../core/types';
 import {Cipher} from '../crypto/SymmetricCipher';
@@ -120,10 +121,13 @@ export default class KdbxXmlReader {
             KdbxXmlReader.readNumber(reader);
           break;
         case 'MemoryProtection':
-          // parseMemoryProtection();
+          KdbxXmlReader.parseMemoryProtection(
+            reader.readFromCurrent(),
+            database,
+          );
           break;
         case 'CustomIcons':
-          // parseCustomIcons();
+          await this.parseCustomIcons(reader.readFromCurrent(), database);
           break;
         case 'RecycleBinEnabled':
           database.metadata.recycleBinEnabled =
@@ -168,17 +172,104 @@ export default class KdbxXmlReader {
           break;
         }
         case 'Binaries':
-          // parseBinaries();
-          break;
+          throw new Error('"Binaries" not implemented');
         case 'CustomData':
-          // parseCustomData(m_meta->customData());
-          break;
+          throw new Error('"CustomData" not implemented');
         case 'SettingsChanged':
           database.metadata.settingsChanged =
             KdbxXmlReader.readDateTime(reader);
           break;
       }
     }
+  }
+
+  private static parseMemoryProtection(reader: XmlReader, database: Database) {
+    if (
+      !reader.current().isOpen ||
+      reader.current().name !== 'MemoryProtection'
+    ) {
+      throw new Error(
+        `Expected "MemoryProtection", found "${reader.current().name}"`,
+      );
+    }
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'ProtectTitle':
+          database.metadata.protectTitle = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'ProtectUserName':
+          database.metadata.protectUserName = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'ProtectPassword':
+          database.metadata.protectPassword = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'ProtectURL':
+          database.metadata.protectURL = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'ProtectNotes':
+          database.metadata.protectNotes = KdbxXmlReader.readBoolean(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+  }
+
+  private async parseCustomIcons(reader: XmlReader, database: Database) {
+    if (!reader.current().isOpen || reader.current().name !== 'CustomIcons') {
+      throw new Error(
+        `Expected "CustomIcons", found "${reader.current().name}"`,
+      );
+    }
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Icon':
+          const icon = await this.parseIcon(reader.readFromCurrent());
+          if (!icon.uuid || !icon.data) {
+            throw new Error('Missing icon uuid or data');
+          }
+
+          database.metadata.customIcons[icon.uuid] = icon;
+          break;
+        default:
+          break;
+      }
+
+      reader.skipCurrentElement();
+    }
+  }
+
+  private async parseIcon(reader: XmlReader): Promise<Icon> {
+    if (!reader.current().isOpen || reader.current().name !== 'Icon') {
+      throw new Error(`Expected "Icon", found "${reader.current().name}"`);
+    }
+
+    const icon: Icon = {};
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'UUID':
+          icon.uuid = await this.readUuid(reader);
+          break;
+        case 'Data':
+          icon.data = await this.readBinary(reader);
+          break;
+        case 'Name':
+          icon.name = KdbxXmlReader.readString(reader);
+          break;
+        case 'LastModificationTime':
+          icon.lastModificationTime = KdbxXmlReader.readDateTime(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return icon;
   }
 
   private async parseRoot(reader: XmlReader, database: Database) {
