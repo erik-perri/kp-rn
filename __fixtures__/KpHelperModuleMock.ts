@@ -28,6 +28,9 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
 
       return result;
     }),
+  transformArgon2KdfKey: jest.fn().mockImplementation(() => {
+    throw new Error('Not implemented');
+  }),
   hash: jest
     .fn<Promise<Uint8Array>, [CryptoHashAlgorithm, Uint8Array[]]>()
     .mockImplementation(async (algorithm, data) => {
