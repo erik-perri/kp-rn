@@ -13,20 +13,14 @@ export class XmlReader {
   private readonly totalSize: number = 0;
   private currentElement: XmlElement;
 
-  constructor(
-    private readonly contents: string,
-    private readonly expectXmlHeader = true,
-  ) {
+  constructor(private readonly contents: string) {
     this.totalSize = this.contents.length;
-    if (expectXmlHeader) {
-      this.currentElement = this.readMetaElement();
-    } else {
-      const firstElement = this.readNextTag(0);
-      if (!firstElement) {
-        throw new Error('No elements found');
-      }
-      this.currentElement = firstElement;
+
+    const firstElement = this.readNextTag(0);
+    if (!firstElement) {
+      throw new Error('No elements found');
     }
+    this.currentElement = firstElement;
   }
 
   current(): XmlElement {
@@ -45,7 +39,6 @@ export class XmlReader {
 
     return new XmlReader(
       this.contents.slice(this.currentElement.position[0], endTag.position[1]),
-      false,
     );
   }
 
@@ -147,15 +140,6 @@ export class XmlReader {
     }
 
     return endTag;
-  }
-
-  private readMetaElement(): XmlElement {
-    const meta = this.readNextTag(0);
-    if (!meta?.isMeta) {
-      throw new Error('Missing XML header');
-    }
-
-    return meta;
   }
 
   private readNextTag(startPosition: number): XmlElement | undefined {

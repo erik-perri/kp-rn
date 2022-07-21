@@ -23,6 +23,10 @@ export default class KdbxXmlReader {
     const dataAsString = String.fromCharCode(...data);
     const reader = new XmlReader(dataAsString);
 
+    if (!reader.current().isMeta) {
+      throw new Error('Unexpected database format, no XML header');
+    }
+
     // Skip past the XML header
     reader.readNextStartElement();
 

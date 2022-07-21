@@ -20,8 +20,17 @@ describe('XmlReader', () => {
       });
     });
 
-    it('throws error when missing header', () => {
-      expect(() => new XmlReader('<Tag />')).toThrow(/Missing XML header/);
+    it('reads the first element', () => {
+      const sut = new XmlReader('<Root/>');
+
+      expect(sut.current()).toEqual({
+        name: 'Root',
+        isClose: true,
+        isOpen: true,
+        isMeta: false,
+        attributes: {},
+        position: [0, 7],
+      });
     });
   });
 
