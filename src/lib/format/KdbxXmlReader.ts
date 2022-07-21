@@ -211,7 +211,10 @@ export default class KdbxXmlReader {
       throw new Error(`Expected "Group", found "${reader.current().name}"`);
     }
 
-    const group = new Group();
+    const group: Group = {
+      entries: [],
+      children: [],
+    };
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
@@ -329,7 +332,12 @@ export default class KdbxXmlReader {
       throw new Error(`Expected "Entry", found "${reader.current().name}"`);
     }
 
-    const entry = new Entry();
+    const entry: Entry = {
+      attachments: {},
+      attributes: {},
+      history: [],
+      protectedAttributes: [],
+    };
 
     let uuid: Uuid | undefined;
 
@@ -444,7 +452,7 @@ export default class KdbxXmlReader {
       throw new Error(`Expected "Times", found "${reader.current().name}"`);
     }
 
-    const timeInfo = new TimeInfo();
+    const timeInfo: TimeInfo = {};
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {

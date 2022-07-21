@@ -2,10 +2,10 @@ import Entry from './Entry';
 import TimeInfo from './TimeInfo';
 import {Uuid} from './types';
 
-export default class Group {
-  children: Group[] = [];
+interface Group {
+  children: Group[];
   customIcon?: Uuid;
-  entries: Entry[] = [];
+  entries: Entry[];
   iconNumber?: number;
   name?: string;
   notes?: string;
@@ -13,3 +13,5 @@ export default class Group {
   timeInfo?: TimeInfo;
   uuid?: Uuid;
 }
+
+export default Group;

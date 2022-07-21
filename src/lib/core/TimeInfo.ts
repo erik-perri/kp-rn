@@ -1,4 +1,4 @@
-export default class TimeInfo {
+interface TimeInfo {
   creationTime?: Date;
   expires?: boolean;
   expiryTime?: Date;
@@ -7,3 +7,5 @@ export default class TimeInfo {
   locationChanged?: Date;
   usageCount?: number;
 }
+
+export default TimeInfo;

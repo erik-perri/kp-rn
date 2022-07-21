@@ -1,6 +1,6 @@
 import {Uuid} from './types';
 
-export default class Metadata {
+interface Metadata {
   color?: string;
   defaultUserName?: string;
   defaultUserNameChanged?: Date;
@@ -25,3 +25,5 @@ export default class Metadata {
   recycleBinUuid?: Uuid;
   settingsChanged?: Date;
 }
+
+export default Metadata;

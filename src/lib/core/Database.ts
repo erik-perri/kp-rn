@@ -36,7 +36,7 @@ export class Database {
 
   constructor(key: CompositeKey) {
     this.data = new DatabaseData(key);
-    this.metadata = new Metadata();
+    this.metadata = {};
   }
 
   setCipher(uuid: string) {
