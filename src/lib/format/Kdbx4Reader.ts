@@ -327,10 +327,14 @@ export default class Kdbx4Reader extends KdbxReader {
       this.getProtectedStreamKey(),
     );
 
-    const xmlReader = new KdbxXmlReader(FILE_VERSION_4, this.binaryPool);
+    const xmlReader = new KdbxXmlReader(
+      FILE_VERSION_4,
+      this.binaryPool,
+      randomStream,
+    );
     const remaining = bufferReader.slice();
 
-    await xmlReader.readDatabase(remaining, database, randomStream);
+    await xmlReader.readDatabase(remaining, database);
 
     await randomStream.destroy();
     await cipher.destroy();

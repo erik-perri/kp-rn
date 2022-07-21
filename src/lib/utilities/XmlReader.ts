@@ -1,6 +1,6 @@
 type Attributes = Record<string, string>;
 
-interface Element {
+export interface XmlElement {
   name: string;
   attributes: Attributes;
   isClose: boolean;
@@ -11,15 +11,40 @@ interface Element {
 
 export class XmlReader {
   private readonly totalSize: number = 0;
-  private currentElement: Element;
+  private currentElement: XmlElement;
 
-  constructor(private readonly contents: string) {
+  constructor(
+    private readonly contents: string,
+    private readonly expectXmlHeader = true,
+  ) {
     this.totalSize = this.contents.length;
-    this.currentElement = this.readMetaElement();
+    if (expectXmlHeader) {
+      this.currentElement = this.readMetaElement();
+    } else {
+      const firstElement = this.readNextTag(0);
+      if (!firstElement) {
+        throw new Error('No elements found');
+      }
+      this.currentElement = firstElement;
+    }
   }
 
-  current(): Element {
+  current(): XmlElement {
     return this.currentElement;
+  }
+
+  readFromCurrent(): XmlReader {
+    const endTag = this.findEndOfCurrentElement();
+    if (endTag?.name !== this.currentElement.name) {
+      throw new Error(
+        `Unable to find end "${this.currentElement.name}" element`,
+      );
+    }
+
+    return new XmlReader(
+      this.contents.slice(this.currentElement.position[0], endTag.position[1]),
+      false,
+    );
   }
 
   readNextStartElement(): boolean {
@@ -28,7 +53,7 @@ export class XmlReader {
       return false;
     }
 
-    while (nextStart.isClose) {
+    while (!nextStart.isOpen) {
       nextStart = this.readNextTag(nextStart.position[1]);
       if (!nextStart) {
         return false;
@@ -42,17 +67,22 @@ export class XmlReader {
 
   skipCurrentElement(): void {
     if (this.currentElement.isOpen) {
-      const endTag = this.findEndOfCurrentElement();
-      if (endTag?.name !== this.currentElement.name) {
-        throw new Error(
-          `Unable to find end "${this.currentElement.name}" element`,
-        );
+      if (this.currentElement.isClose) {
+        const nextTag = this.readNextTag(this.currentElement.position[1]);
+        if (!nextTag) {
+          throw new Error('Unable to find next element');
+        }
+        this.currentElement = nextTag;
+      } else {
+        const endTag = this.findEndOfCurrentElement();
+        if (endTag?.name !== this.currentElement.name) {
+          throw new Error(
+            `Unable to find end "${this.currentElement.name}" element`,
+          );
+        }
+        this.currentElement = endTag;
       }
-
-      this.currentElement = endTag;
     }
-
-    this.readNextStartElement();
   }
 
   readElementText(): string {
@@ -60,6 +90,10 @@ export class XmlReader {
       throw new Error(
         `Cannot read text from non-open element "${this.currentElement.name}"`,
       );
+    }
+
+    if (this.currentElement.isClose) {
+      return '';
     }
 
     const openTag = this.currentElement;
@@ -75,7 +109,7 @@ export class XmlReader {
     return this.contents.slice(openTag.position[1], endTag.position[0]);
   }
 
-  private findEndOfCurrentElement(): Element | undefined {
+  private findEndOfCurrentElement(): XmlElement | undefined {
     let openChildTags = 0;
     let endTag = this.readNextTag(this.current().position[1]);
     if (!endTag) {
@@ -113,7 +147,7 @@ export class XmlReader {
     return endTag;
   }
 
-  private readMetaElement(): Element {
+  private readMetaElement(): XmlElement {
     const meta = this.readNextTag(0);
     if (!meta?.isMeta) {
       throw new Error('Missing XML header');
@@ -122,7 +156,7 @@ export class XmlReader {
     return meta;
   }
 
-  private readNextTag(startPosition: number): Element | undefined {
+  private readNextTag(startPosition: number): XmlElement | undefined {
     const startIndex: number = this.contents.indexOf('<', startPosition);
     if (startIndex === -1) {
       return undefined;
@@ -146,7 +180,7 @@ export class XmlReader {
     }
 
     if (tagInside.endsWith('/')) {
-      isOpen = false;
+      isClose = true;
       tagInside = tagInside.slice(0, -1);
     }
 

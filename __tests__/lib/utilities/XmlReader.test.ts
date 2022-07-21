@@ -100,13 +100,11 @@ describe('XmlReader', () => {
       );
 
       sut.readNextStartElement();
-
-      sut.readNextStartElement();
       expect(sut.current()).toEqual(
         expect.objectContaining({
           name: 'Tag',
-          isOpen: false,
-          isClose: false,
+          isOpen: true,
+          isClose: true,
           attributes: {
             value: 'a',
             'value-with-space': 'a space',
@@ -139,14 +137,14 @@ describe('XmlReader', () => {
       );
     });
 
-    it('throws an error if element is closed', () => {
+    it('returns empty if element is closed', () => {
       const sut = new XmlReader('<?xml version="1.0"?><ElementOne />');
 
       sut.readNextStartElement();
 
-      expect(() => sut.readElementText()).toThrow(
-        /Cannot read text from non-open element "ElementOne"/,
-      );
+      const result = sut.readElementText();
+
+      expect(result).toEqual('');
     });
 
     it('throws an error if element is not properly closed', () => {
@@ -180,6 +178,7 @@ describe('XmlReader', () => {
       expect(sut.current().name).toEqual('Child');
 
       sut.skipCurrentElement();
+      sut.readNextStartElement();
       expect(sut.current().name).toEqual('Root');
     });
 
@@ -200,6 +199,7 @@ describe('XmlReader', () => {
       expect(sut.current().name).toEqual('Meta');
 
       sut.skipCurrentElement();
+      sut.readNextStartElement();
       expect(sut.current().name).toEqual('Root');
     });
 
