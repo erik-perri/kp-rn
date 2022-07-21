@@ -1,15 +1,16 @@
-import {Database} from '../core/Database';
-import {UUID_SIZE} from '../utilities/sizes';
-import {FILE_VERSION_4} from './Keepass2';
-import {Cipher} from '../crypto/SymmetricCipher';
-import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
-import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
-import {XmlElement, XmlReader} from '../utilities/XmlReader';
 import {stringify as uuidStringify} from 'uuid';
-import Group from '../core/Group';
+
+import {Database} from '../core/Database';
 import Entry from '../core/Entry';
-import {Uuid} from '../core/types';
+import Group from '../core/Group';
 import TimeInfo from '../core/TimeInfo';
+import {Uuid} from '../core/types';
+import {Cipher} from '../crypto/SymmetricCipher';
+import {UUID_SIZE} from '../utilities/sizes';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
+import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import {XmlElement, XmlReader} from '../utilities/XmlReader';
+import {FILE_VERSION_4} from './Keepass2';
 
 export default class KdbxXmlReader {
   constructor(

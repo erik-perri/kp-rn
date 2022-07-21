@@ -1,12 +1,13 @@
-import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
 import * as crypto from 'crypto';
+import {Chacha20} from 'ts-chacha20';
+
 import {CryptoHashAlgorithm} from '../src/lib/crypto/CryptoHash';
 import {
   Cipher,
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../src/lib/crypto/SymmetricCipher';
-import {Chacha20} from 'ts-chacha20';
+import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
 
 const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
   readFile: jest.fn().mockResolvedValue([]),

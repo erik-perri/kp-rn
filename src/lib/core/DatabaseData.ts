@@ -1,7 +1,7 @@
-import {CompressionAlgorithm} from './Database';
 import Kdf from '../crypto/kdf/Kdf';
 import CompositeKey from '../keys/CompositeKey';
 import PasswordKey from '../keys/PasswordKey';
+import {CompressionAlgorithm} from './Database';
 
 export default class DatabaseData {
   private _compressionAlgorithm?: CompressionAlgorithm;

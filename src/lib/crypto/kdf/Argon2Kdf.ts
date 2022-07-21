@@ -1,4 +1,5 @@
-import Kdf from './Kdf';
+import bigInt, {BigInteger} from 'big-integer';
+
 import {
   KDF_ARGON2D,
   KDF_ARGON2ID,
@@ -10,7 +11,7 @@ import {
   VariantFieldMap,
 } from '../../format/Keepass2';
 import KpHelperModule from '../../utilities/KpHelperModule';
-import bigInt, {BigInteger} from 'big-integer';
+import Kdf from './Kdf';
 
 export enum Argon2Version {
   V10 = 0x10,

@@ -1,7 +1,7 @@
+import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 import CryptoHash, {
   CryptoHashAlgorithm,
 } from '../../../src/lib/crypto/CryptoHash';
-import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 import HmacBlockStream, {
   UINT64_MAX,
 } from '../../../src/lib/streams/HmacBlockStream';

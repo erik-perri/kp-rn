@@ -1,6 +1,6 @@
 import Entry from './Entry';
-import {Uuid} from './types';
 import TimeInfo from './TimeInfo';
+import {Uuid} from './types';
 
 export default class Group {
   children: Group[] = [];

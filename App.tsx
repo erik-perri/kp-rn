@@ -1,4 +1,5 @@
 import React from 'react';
+
 import LockStateProvider from './src/components/LockStateProvider';
 import Router from './src/components/Router';
 

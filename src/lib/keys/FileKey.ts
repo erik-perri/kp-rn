@@ -1,6 +1,6 @@
-import {Key} from './Key';
-import {SHA256_SIZE} from '../utilities/sizes';
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import {SHA256_SIZE} from '../utilities/sizes';
+import {Key} from './Key';
 
 enum FileKeyType {
   None,

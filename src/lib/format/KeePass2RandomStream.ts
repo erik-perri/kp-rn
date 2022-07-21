@@ -1,9 +1,9 @@
+import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import SymmetricCipher, {
   Cipher,
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../crypto/SymmetricCipher';
-import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 
 export default abstract class KeePass2RandomStream {
   static async create(

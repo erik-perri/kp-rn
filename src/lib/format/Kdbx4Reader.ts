@@ -1,9 +1,16 @@
-import KdbxReader from './KdbxReader';
 import {CompressionAlgorithm, Database} from '../core/Database';
+import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import SymmetricCipher, {
+  SymmetricCipherDirection,
+  SymmetricCipherMode,
+} from '../crypto/SymmetricCipher';
+import CompositeKey from '../keys/CompositeKey';
+import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
-import CompositeKey from '../keys/CompositeKey';
-import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import {gunzip} from '../utilities/zlib';
+import KdbxReader from './KdbxReader';
+import KdbxXmlReader from './KdbxXmlReader';
 import {
   FILE_VERSION_4,
   FILE_VERSION_CRITICAL_MASK,
@@ -19,14 +26,7 @@ import {
   VARIANTMAP_VERSION,
   VariantMapFieldType,
 } from './Keepass2';
-import HmacBlockStream, {UINT64_MAX} from '../streams/HmacBlockStream';
-import KdbxXmlReader from './KdbxXmlReader';
 import KeePass2RandomStream from './KeePass2RandomStream';
-import {gunzip} from '../utilities/zlib';
-import SymmetricCipher, {
-  SymmetricCipherDirection,
-  SymmetricCipherMode,
-} from '../crypto/SymmetricCipher';
 
 export default class Kdbx4Reader extends KdbxReader {
   private binaryPool: Record<string, Uint8Array> = {};

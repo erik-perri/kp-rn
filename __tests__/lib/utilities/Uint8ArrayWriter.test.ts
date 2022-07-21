@@ -1,5 +1,6 @@
-import Uint8ArrayWriter from '../../../src/lib/utilities/Uint8ArrayWriter';
 import bigInt, {BigInteger} from 'big-integer';
+
+import Uint8ArrayWriter from '../../../src/lib/utilities/Uint8ArrayWriter';
 
 describe('Uint8ArrayWriter', () => {
   describe('write*', () => {

@@ -1,8 +1,9 @@
 import * as fs from 'fs';
+
 import Kdbx4Reader from '../../../src/lib/format/Kdbx4Reader';
-import PasswordKey from '../../../src/lib/keys/PasswordKey';
 import CompositeKey from '../../../src/lib/keys/CompositeKey';
 import FileKey from '../../../src/lib/keys/FileKey';
+import PasswordKey from '../../../src/lib/keys/PasswordKey';
 
 describe('Kbd4Reader', () => {
   it.each([

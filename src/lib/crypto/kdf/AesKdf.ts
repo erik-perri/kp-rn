@@ -1,4 +1,3 @@
-import Kdf from './Kdf';
 import {
   KDF_AES_KDBX3,
   KDF_AES_KDBX4,
@@ -6,8 +5,9 @@ import {
   KDFPARAM_AES_SEED,
   VariantFieldMap,
 } from '../../format/Keepass2';
-import CryptoHash, {CryptoHashAlgorithm} from '../CryptoHash';
 import KpHelperModule from '../../utilities/KpHelperModule';
+import CryptoHash, {CryptoHashAlgorithm} from '../CryptoHash';
+import Kdf from './Kdf';
 
 export default class AesKdf extends Kdf {
   constructor(private legacyKdbx3: boolean = false) {

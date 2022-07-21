@@ -1,11 +1,12 @@
 import {NativeModules} from 'react-native';
+
 import {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import {Argon2Type, Argon2Version} from '../crypto/kdf/Argon2Kdf';
 import {
   Cipher,
   SymmetricCipherDirection,
   SymmetricCipherMode,
 } from '../crypto/SymmetricCipher';
-import {Argon2Type, Argon2Version} from '../crypto/kdf/Argon2Kdf';
 
 const {KpHelperModule} = NativeModules;
 

@@ -1,7 +1,7 @@
-import {Key} from './Key';
+import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import Kdf from '../crypto/kdf/Kdf';
 import {KDF_AES_KDBX3} from '../format/Keepass2';
-import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
+import {Key} from './Key';
 
 export default class CompositeKey extends Key {
   public static readonly UUID = '76a7ae25-a542-4add-9849-7c06be945b94';

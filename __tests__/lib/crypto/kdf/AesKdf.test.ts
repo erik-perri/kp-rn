@@ -1,5 +1,6 @@
-import AesKdf from '../../../../src/lib/crypto/kdf/AesKdf';
 import bigInt from 'big-integer';
+
+import AesKdf from '../../../../src/lib/crypto/kdf/AesKdf';
 
 const kdfSeed = Uint8Array.from([
   0x93, 0x16, 0xf5, 0x2d, 0x88, 0xe9, 0x3f, 0x08, 0x65, 0xff, 0xaf, 0x96, 0x38,

@@ -1,5 +1,6 @@
-import {VariantFieldMap} from '../../format/Keepass2';
 import bigInt, {BigInteger} from 'big-integer';
+
+import {VariantFieldMap} from '../../format/Keepass2';
 
 export default abstract class Kdf {
   private seed: Uint8Array = new Uint8Array(0);

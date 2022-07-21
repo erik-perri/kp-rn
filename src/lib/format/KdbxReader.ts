@@ -1,11 +1,12 @@
-import {Database, toCompressionAlgorithm} from '../core/Database';
 import {stringify as uuidStringify} from 'uuid';
+
+import {Database, toCompressionAlgorithm} from '../core/Database';
 import SymmetricCipher, {SymmetricCipherMode} from '../crypto/SymmetricCipher';
 import CompositeKey from '../keys/CompositeKey';
-import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
 import {UUID_SIZE} from '../utilities/sizes';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
+import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
 
 export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;

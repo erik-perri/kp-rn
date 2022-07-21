@@ -1,10 +1,11 @@
 import Kdf from '../crypto/kdf/Kdf';
-import DatabaseData from './DatabaseData';
-import PasswordKey from '../keys/PasswordKey';
-import CompositeKey from '../keys/CompositeKey';
 import {VariantFieldMap} from '../format/Keepass2';
-import Metadata from './Metadata';
+import CompositeKey from '../keys/CompositeKey';
+import PasswordKey from '../keys/PasswordKey';
+import DatabaseData from './DatabaseData';
 import Group from './Group';
+import Metadata from './Metadata';
+import {Uuid} from './types';
 
 export enum CompressionAlgorithm {
   CompressionNone = 0,

@@ -1,5 +1,5 @@
-import {Uuid} from './types';
 import TimeInfo from './TimeInfo';
+import {Uuid} from './types';
 
 export default class Entry {
   attachments: Record<string, Uint8Array> = {};

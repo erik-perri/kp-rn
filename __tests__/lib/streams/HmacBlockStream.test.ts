@@ -1,7 +1,7 @@
+import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 import HmacBlockStream, {
   UINT64_MAX,
 } from '../../../src/lib/streams/HmacBlockStream';
-import sampleAes256AesKdfKdbx4 from '../../../__fixtures__/sample-aes256-aes-kdf-kdbx4';
 
 describe('HmacBlockStream', () => {
   it('getHmacKey works as expected', async () => {

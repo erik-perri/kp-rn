@@ -1,5 +1,6 @@
-import Uint8ArrayReader from '../../../src/lib/utilities/Uint8ArrayReader';
 import bigInt, {BigInteger} from 'big-integer';
+
+import Uint8ArrayReader from '../../../src/lib/utilities/Uint8ArrayReader';
 
 describe('Uint8ArrayReader', () => {
   describe('read*', () => {

@@ -1,12 +1,13 @@
 import {stringify} from 'uuid';
+
+import {Cipher} from '../crypto/SymmetricCipher';
+import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 import {
   isKeePassFile,
   KeePassEntry,
   KeePassFile,
   KeepPassGroup,
 } from './Kdbx4XmlTypes';
-import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
-import {Cipher} from '../crypto/SymmetricCipher';
 
 export default class Kdbx4XmlReader {
   async decodeFile(

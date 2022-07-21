@@ -1,8 +1,9 @@
+import bigInt, {BigInteger} from 'big-integer';
+
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
-import bigInt, {BigInteger} from 'big-integer';
 
 export const UINT64_MAX = bigInt('18446744073709551615'); // 0xffffffffffffffff
 
