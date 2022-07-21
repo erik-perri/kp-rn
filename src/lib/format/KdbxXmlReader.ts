@@ -2,7 +2,7 @@ import {stringify as uuidStringify} from 'uuid';
 
 import {CustomDataItem, Database, DeletedObject} from '../core/Database';
 import Entry from '../core/Entry';
-import Group from '../core/Group';
+import Group, {TriState} from '../core/Group';
 import Icon from '../core/Icon';
 import TimeInfo from '../core/TimeInfo';
 import {Uuid} from '../core/types';
@@ -405,12 +405,24 @@ export default class KdbxXmlReader {
         case 'CustomData':
           group.customData = KdbxXmlReader.parseCustomData(reader);
           break;
-        // IsExpanded
-        // DefaultAutoTypeSequence
-        // EnableAutoType
-        // EnableSearching
-        // LastTopVisibleEntry
-        // PreviousParentGroup
+        case 'IsExpanded':
+          group.isExpanded = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'DefaultAutoTypeSequence':
+          group.defaultAutoTypeSequence = KdbxXmlReader.readString(reader);
+          break;
+        case 'EnableAutoType':
+          group.enableAutoType = KdbxXmlReader.readTriState(reader);
+          break;
+        case 'EnableSearching':
+          group.enableSearching = KdbxXmlReader.readTriState(reader);
+          break;
+        case 'LastTopVisibleEntry':
+          group.lastTopVisibleEntry = await this.readUuid(reader);
+          break;
+        case 'PreviousParentGroup':
+          group.previousParentGroup = await this.readUuid(reader);
+          break;
         default:
           reader.skipCurrentElement();
           break;
@@ -534,16 +546,32 @@ export default class KdbxXmlReader {
         case 'CustomData':
           entry.customData = KdbxXmlReader.parseCustomData(reader);
           break;
-        // IconID
-        // CustomIconUUID
-        // ForegroundColor
-        // BackgroundColor
-        // OverrideURL
-        // Tags
-        // QualityCheck
-        // Binary
-        // AutoType
-        // PreviousParentGroup
+        case 'IconID':
+          entry.iconNumber = KdbxXmlReader.readNumber(reader);
+          break;
+        case 'CustomIconUUID':
+          entry.customIcon = await this.readUuid(reader);
+          break;
+        case 'ForegroundColor':
+          entry.foregroundColor = KdbxXmlReader.readColor(reader);
+          break;
+        case 'BackgroundColor':
+          entry.backgroundColor = KdbxXmlReader.readColor(reader);
+          break;
+        case 'OverrideURL':
+          entry.overrideURL = KdbxXmlReader.readString(reader);
+          break;
+        case 'Tags':
+          entry.tags = KdbxXmlReader.readString(reader);
+          break;
+        case 'QualityCheck':
+          entry.qualityCheck = KdbxXmlReader.readBoolean(reader);
+          break;
+        // TODO Binary
+        // TODO AutoType
+        case 'PreviousParentGroup':
+          entry.previousParentGroup = await this.readUuid(reader);
+          break;
         default:
           reader.skipCurrentElement();
           break;
@@ -747,6 +775,19 @@ export default class KdbxXmlReader {
     }
 
     throw new Error(`Invalid bool value "${value}"`);
+  }
+
+  private static readTriState(reader: XmlReader): TriState {
+    const value = KdbxXmlReader.readString(reader).toLowerCase();
+    if (value === 'null') {
+      return TriState.Inherit;
+    } else if (value === 'true') {
+      return TriState.Enable;
+    } else if (value === 'false') {
+      return TriState.Disable;
+    }
+
+    throw new Error(`Invalid TriState value "${value}"`);
   }
 
   private static readColor(reader: XmlReader): string {
