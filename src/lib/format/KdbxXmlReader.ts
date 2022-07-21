@@ -1,6 +1,6 @@
 import {stringify as uuidStringify} from 'uuid';
 
-import {Database, DeletedObject} from '../core/Database';
+import {CustomDataItem, Database, DeletedObject} from '../core/Database';
 import Entry from '../core/Entry';
 import Group from '../core/Group';
 import Icon from '../core/Icon';
@@ -173,7 +173,10 @@ export default class KdbxXmlReader {
         case 'Binaries':
           throw new Error('"Binaries" not implemented');
         case 'CustomData':
-          throw new Error('"CustomData" not implemented');
+          database.metadata.customData = KdbxXmlReader.parseCustomData(
+            reader.readFromCurrent(),
+          );
+          break;
         case 'SettingsChanged':
           database.metadata.settingsChanged =
             KdbxXmlReader.readDateTime(reader);
@@ -183,6 +186,68 @@ export default class KdbxXmlReader {
           break;
       }
     }
+  }
+
+  private static parseCustomData(
+    reader: XmlReader,
+  ): Record<string, CustomDataItem> {
+    if (!reader.current().isOpen || reader.current().name !== 'CustomData') {
+      throw new Error(
+        `Expected "CustomData", found "${reader.current().name}"`,
+      );
+    }
+
+    const customData: Record<string, CustomDataItem> = {};
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Item': {
+          const item = KdbxXmlReader.parseCustomDataItem(
+            reader.readFromCurrent(),
+          );
+          if (!item.key || !item.value) {
+            throw new Error('Missing custom data key or value');
+          }
+
+          customData[item.key] = item;
+          break;
+        }
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return customData;
+  }
+
+  private static parseCustomDataItem(reader: XmlReader): CustomDataItem {
+    if (!reader.current().isOpen || reader.current().name !== 'Item') {
+      throw new Error(
+        `Expected "CustomData", found "${reader.current().name}"`,
+      );
+    }
+
+    const customData: CustomDataItem = {};
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Key':
+          customData.key = KdbxXmlReader.readString(reader);
+          break;
+        case 'Value':
+          customData.value = KdbxXmlReader.readString(reader);
+          break;
+        case 'LastModificationTime':
+          customData.lastModified = KdbxXmlReader.readDateTime(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return customData;
   }
 
   private static parseMemoryProtection(reader: XmlReader, database: Database) {
@@ -307,6 +372,7 @@ export default class KdbxXmlReader {
     const group: Group = {
       entries: [],
       children: [],
+      customData: {},
     };
 
     while (reader.readNextStartElement()) {
@@ -346,6 +412,15 @@ export default class KdbxXmlReader {
         case 'Entry':
           group.entries.push(await this.parseEntry(reader.readFromCurrent()));
           break;
+        case 'CustomData':
+          group.customData = KdbxXmlReader.parseCustomData(reader);
+          break;
+        // IsExpanded
+        // DefaultAutoTypeSequence
+        // EnableAutoType
+        // EnableSearching
+        // LastTopVisibleEntry
+        // PreviousParentGroup
         default:
           reader.skipCurrentElement();
           break;
@@ -424,6 +499,7 @@ export default class KdbxXmlReader {
     const entry: Entry = {
       attachments: {},
       attributes: {},
+      customData: {},
       history: [],
       protectedAttributes: [],
     };
@@ -465,6 +541,19 @@ export default class KdbxXmlReader {
             reader.readFromCurrent(),
           );
           break;
+        case 'CustomData':
+          entry.customData = KdbxXmlReader.parseCustomData(reader);
+          break;
+        // IconID
+        // CustomIconUUID
+        // ForegroundColor
+        // BackgroundColor
+        // OverrideURL
+        // Tags
+        // QualityCheck
+        // Binary
+        // AutoType
+        // PreviousParentGroup
         default:
           reader.skipCurrentElement();
           break;

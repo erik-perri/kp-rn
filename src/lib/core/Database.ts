@@ -24,6 +24,12 @@ export interface DeletedObject {
   deletionTime?: Date;
 }
 
+export interface CustomDataItem {
+  key?: string;
+  value?: string;
+  lastModified?: Date;
+}
+
 export class Database {
   readonly metadata: Metadata;
   readonly data: DatabaseData;
@@ -36,7 +42,10 @@ export class Database {
 
   constructor(key: CompositeKey) {
     this.data = new DatabaseData(key);
-    this.metadata = {};
+    this.metadata = {
+      customData: {},
+      customIcons: {},
+    };
   }
 
   setCipher(uuid: string) {

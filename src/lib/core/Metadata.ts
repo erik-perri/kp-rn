@@ -1,8 +1,10 @@
+import {CustomDataItem} from './Database';
 import Icon from './Icon';
 import {Uuid} from './types';
 
 interface Metadata {
   color?: string;
+  customData: Record<string, CustomDataItem>;
   customIcons: Record<Uuid, Icon>;
   defaultUserName?: string;
   defaultUserNameChanged?: Date;
