@@ -4,6 +4,7 @@ import PasswordKey from '../keys/PasswordKey';
 import CompositeKey from '../keys/CompositeKey';
 import {VariantFieldMap} from '../format/Keepass2';
 import Metadata from './Metadata';
+import Group from './Group';
 
 export enum CompressionAlgorithm {
   CompressionNone = 0,
@@ -19,6 +20,7 @@ export function toCompressionAlgorithm(id: number): id is CompressionAlgorithm {
 
 export class Database {
   public metadata: Metadata;
+  public rootGroup?: Group;
   private cipher?: string;
   private data: DatabaseData;
   private formatVersion?: number;
