@@ -1,4 +1,5 @@
 import {Uuid} from './types';
+import TimeInfo from './TimeInfo';
 
 export default class Entry {
   private _uuid: Uuid | undefined;
@@ -6,6 +7,7 @@ export default class Entry {
   private _protectedAttributes: string[] = [];
   private _attachments: Record<string, Uint8Array> = {};
   private _history: Entry[] = [];
+  private _timeInfo: TimeInfo | undefined;
 
   get uuid(): Uuid {
     if (this._uuid === undefined) {
@@ -36,5 +38,16 @@ export default class Entry {
 
   get history(): Entry[] {
     return this._history;
+  }
+
+  get timeInfo(): TimeInfo {
+    if (this._timeInfo === undefined) {
+      throw new Error('timeInfo not initialized');
+    }
+    return this._timeInfo;
+  }
+
+  set timeInfo(value: TimeInfo) {
+    this._timeInfo = value;
   }
 }

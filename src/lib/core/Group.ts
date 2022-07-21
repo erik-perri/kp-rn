@@ -1,5 +1,6 @@
 import Entry from './Entry';
 import {Uuid} from './types';
+import TimeInfo from './TimeInfo';
 
 export default class Group {
   private _uuid: Uuid | undefined;
@@ -8,6 +9,7 @@ export default class Group {
   private _tags: string | undefined;
   private _iconNumber: number | undefined;
   private _customIcon: Uuid | undefined;
+  private _timeInfo: TimeInfo | undefined;
   private _children: Group[] = [];
   private _entries: Entry[] = [];
 
@@ -75,6 +77,17 @@ export default class Group {
 
   set customIcon(value: Uuid) {
     this._customIcon = value;
+  }
+
+  get timeInfo(): TimeInfo {
+    if (this._timeInfo === undefined) {
+      throw new Error('timeInfo not initialized');
+    }
+    return this._timeInfo;
+  }
+
+  set timeInfo(value: TimeInfo) {
+    this._timeInfo = value;
   }
 
   get children(): Group[] {

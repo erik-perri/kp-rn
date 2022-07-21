@@ -2,11 +2,13 @@ import {Database} from '../core/Database';
 import {FILE_VERSION_4} from './Keepass2';
 import {Cipher} from '../crypto/SymmetricCipher';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import {XmlElement, XmlReader} from '../utilities/XmlReader';
 import {stringify as uuidStringify} from 'uuid';
 import Group from '../core/Group';
 import Entry from '../core/Entry';
 import {Uuid} from '../core/types';
+import TimeInfo from '../core/TimeInfo';
 
 export default class KdbxXmlReader {
   constructor(
@@ -220,6 +222,11 @@ export default class KdbxXmlReader {
         case 'Tags':
           group.tags = KdbxXmlReader.readString(reader);
           break;
+        case 'Times':
+          group.timeInfo = await KdbxXmlReader.parseTimes(
+            reader.readFromCurrent(),
+          );
+          break;
         case 'IconID':
           group.iconNumber = KdbxXmlReader.readNumber(reader);
           break;
@@ -279,6 +286,11 @@ export default class KdbxXmlReader {
           }
           break;
         }
+        case 'Times':
+          entry.timeInfo = await KdbxXmlReader.parseTimes(
+            reader.readFromCurrent(),
+          );
+          break;
         case 'History':
           if (isInHistory) {
             throw new Error('History element in history entry');
@@ -358,6 +370,45 @@ export default class KdbxXmlReader {
     return [key, value, isProtected ?? false];
   }
 
+  private static async parseTimes(reader: XmlReader): Promise<TimeInfo> {
+    if (!reader.current().isOpen || reader.current().name !== 'Times') {
+      throw new Error(`Expected "Times", found "${reader.current().name}"`);
+    }
+
+    const timeInfo = new TimeInfo();
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'LastModificationTime':
+          timeInfo.lastModificationTime = KdbxXmlReader.readDateTime(reader);
+          break;
+        case 'CreationTime':
+          timeInfo.creationTime = KdbxXmlReader.readDateTime(reader);
+          break;
+        case 'LastAccessTime':
+          timeInfo.lastAccessTime = KdbxXmlReader.readDateTime(reader);
+          break;
+        case 'ExpiryTime':
+          timeInfo.expiryTime = KdbxXmlReader.readDateTime(reader);
+          break;
+        case 'Expires':
+          timeInfo.expires = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'UsageCount':
+          timeInfo.usageCount = KdbxXmlReader.readNumber(reader);
+          break;
+        case 'LocationChanged':
+          timeInfo.locationChanged = KdbxXmlReader.readDateTime(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    return timeInfo;
+  }
+
   private static readString(reader: XmlReader): string {
     if (reader.current().isClose) {
       return '';
@@ -395,6 +446,47 @@ export default class KdbxXmlReader {
     return uuidStringify(Uint8ArrayWriter.fromBase64(text));
   }
 
+  private static readDateTime(reader: XmlReader): Date {
+    const value = KdbxXmlReader.readString(reader);
+    if (KdbxXmlReader.isBase64(value)) {
+      let data = Uint8ArrayWriter.leftJustify(
+        Uint8ArrayWriter.fromBase64(value),
+        8,
+      ).slice(0, 8);
+
+      const secondsSinceBc = Uint8ArrayReader.toUInt64LE(data);
+      const secondsSinceBcAsNumber = secondsSinceBc.toJSNumber();
+      if (secondsSinceBc.greater(secondsSinceBcAsNumber)) {
+        throw new Error(`Date outside of range: ${secondsSinceBc}`);
+      }
+
+      const date = new Date();
+      date.setUTCFullYear(0, 0, 0);
+      date.setUTCHours(0, 0, 0, 0);
+      date.setUTCSeconds(secondsSinceBcAsNumber);
+      return date;
+    }
+
+    throw new Error('Non-encoded dates not implemented');
+  }
+
+  private static readBoolean(reader: XmlReader): boolean {
+    const value = KdbxXmlReader.readString(reader);
+    if (!value.length) {
+      return false;
+    }
+
+    const valueAsLower = value.toLowerCase();
+    if (valueAsLower === 'true') {
+      return true;
+    }
+    if (valueAsLower === 'false') {
+      return false;
+    }
+
+    throw new Error(`Invalid bool value "${value}"`);
+  }
+
   private async readBinary(reader: XmlReader): Promise<Uint8Array> {
     const value = reader.readElementText();
     let data = Uint8ArrayWriter.fromBase64(value);
@@ -406,5 +498,11 @@ export default class KdbxXmlReader {
 
   private static isProtected(element: XmlElement) {
     return element.attributes.Protected?.toLowerCase() === 'true';
+  }
+
+  private static isBase64(input: string): boolean {
+    return Boolean(
+      input.match(/(^(?:[a-z\d+/]{4})*(?:[a-z\d+/]{3}=|[a-z\d+/]{2}==)?$)/i),
+    );
   }
 }

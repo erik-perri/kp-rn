@@ -25,6 +25,18 @@ export default class Uint8ArrayWriter {
     return writer.slice();
   }
 
+  static leftJustify(data: Uint8Array, size: number, fillValue: number = 0) {
+    if (data.byteLength < size) {
+      const newData = [
+        ...data,
+        ...new Uint8Array(size - data.byteLength).fill(fillValue),
+      ];
+      data = Uint8Array.from(newData);
+    }
+
+    return data;
+  }
+
   static fromBase64(value: string): Uint8Array {
     return toByteArray(value);
   }
