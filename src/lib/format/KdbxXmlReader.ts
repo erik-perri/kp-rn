@@ -60,9 +60,10 @@ export default class KdbxXmlReader {
           await this.parseRoot(reader.readFromCurrent(), database);
           rootElementFound = true;
           break;
+        default:
+          reader.skipCurrentElement();
+          break;
       }
-
-      reader.skipCurrentElement();
     }
   }
 
@@ -72,9 +73,7 @@ export default class KdbxXmlReader {
     }
 
     while (reader.readNextStartElement()) {
-      const current = reader.current();
-
-      switch (current.name) {
+      switch (reader.current().name) {
         case 'Generator':
           database.metadata.generator = KdbxXmlReader.readString(reader);
           break;
@@ -179,6 +178,9 @@ export default class KdbxXmlReader {
           database.metadata.settingsChanged =
             KdbxXmlReader.readDateTime(reader);
           break;
+        default:
+          reader.skipCurrentElement();
+          break;
       }
     }
   }
@@ -235,10 +237,9 @@ export default class KdbxXmlReader {
           database.metadata.customIcons[icon.uuid] = icon;
           break;
         default:
+          reader.skipCurrentElement();
           break;
       }
-
-      reader.skipCurrentElement();
     }
   }
 
@@ -291,9 +292,10 @@ export default class KdbxXmlReader {
             reader.readFromCurrent(),
           );
           break;
+        default:
+          reader.skipCurrentElement();
+          break;
       }
-
-      reader.skipCurrentElement();
     }
   }
 
@@ -338,16 +340,12 @@ export default class KdbxXmlReader {
         case 'CustomIconUUID':
           group.customIcon = await this.readUuid(reader);
           break;
-        case 'Group': {
+        case 'Group':
           group.children.push(await this.parseGroup(reader.readFromCurrent()));
-          reader.skipCurrentElement();
           break;
-        }
-        case 'Entry': {
+        case 'Entry':
           group.entries.push(await this.parseEntry(reader.readFromCurrent()));
-          reader.skipCurrentElement();
           break;
-        }
         default:
           reader.skipCurrentElement();
           break;
@@ -495,10 +493,9 @@ export default class KdbxXmlReader {
           history.push(await this.parseEntry(reader.readFromCurrent(), true));
           break;
         default:
+          reader.skipCurrentElement();
           break;
       }
-
-      reader.skipCurrentElement();
     }
 
     return history;

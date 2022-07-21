@@ -37,9 +37,13 @@ export class XmlReader {
       );
     }
 
-    return new XmlReader(
+    const reader = new XmlReader(
       this.contents.slice(this.currentElement.position[0], endTag.position[1]),
     );
+
+    this.skipCurrentElement();
+
+    return reader;
   }
 
   readNextStartElement(): boolean {
