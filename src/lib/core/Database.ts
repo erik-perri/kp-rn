@@ -19,15 +19,16 @@ export function toCompressionAlgorithm(id: number): id is CompressionAlgorithm {
 }
 
 export class Database {
-  public metadata: Metadata;
+  readonly metadata: Metadata;
+  readonly data: DatabaseData;
+
   public rootGroup?: Group;
   private cipher?: string;
-  private data: DatabaseData;
   private formatVersion?: number;
 
   constructor(key: CompositeKey) {
     this.data = new DatabaseData(key);
-    this.metadata = new Metadata('', '');
+    this.metadata = new Metadata();
   }
 
   setCipher(uuid: string) {

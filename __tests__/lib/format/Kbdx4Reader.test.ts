@@ -47,7 +47,7 @@ describe('Kbd4Reader', () => {
     );
 
     expect(database.metadata.generator).toEqual('KeePassXC');
-    expect(database.metadata.databaseName).toEqual('Sample');
+    expect(database.metadata.name).toEqual('Sample');
     expect(database.rootGroup?.entries?.[0]?.attributes?.Password).toEqual(
       'password',
     );

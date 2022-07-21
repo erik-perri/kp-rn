@@ -1,4 +1,5 @@
 import {Database} from '../core/Database';
+import {UUID_SIZE} from '../utilities/sizes';
 import {FILE_VERSION_4} from './Keepass2';
 import {Cipher} from '../crypto/SymmetricCipher';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
@@ -81,37 +82,43 @@ export default class KdbxXmlReader {
           database.metadata.headerHash = await this.readBinary(reader);
           break;
         case 'DatabaseName':
-          database.metadata.databaseName = KdbxXmlReader.readString(reader);
+          database.metadata.name = KdbxXmlReader.readString(reader);
           break;
         case 'DatabaseNameChanged':
-          // m_meta->setNameChanged(readDateTime());
+          database.metadata.nameChanged = KdbxXmlReader.readDateTime(reader);
           break;
         case 'DatabaseDescription':
           database.metadata.description = KdbxXmlReader.readString(reader);
           break;
         case 'DatabaseDescriptionChanged':
-          // m_meta->setDescriptionChanged(readDateTime());
+          database.metadata.descriptionChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
         case 'DefaultUserName':
-          // m_meta->setDefaultUserName(readString());
+          database.metadata.defaultUserName = KdbxXmlReader.readString(reader);
           break;
         case 'DefaultUserNameChanged':
-          // m_meta->setDefaultUserNameChanged(readDateTime());
+          database.metadata.defaultUserNameChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
         case 'MaintenanceHistoryDays':
-          // m_meta->setMaintenanceHistoryDays(readNumber());
+          database.metadata.maintenanceHistoryDays =
+            KdbxXmlReader.readNumber(reader);
           break;
         case 'Color':
-          // m_meta->setColor(readColor());
+          database.metadata.color = KdbxXmlReader.readColor(reader);
           break;
         case 'MasterKeyChanged':
-          // m_meta->setDatabaseKeyChanged(readDateTime());
+          database.metadata.masterKeyChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
         case 'MasterKeyChangeRec':
-          // m_meta->setMasterKeyChangeRec(readNumber());
+          database.metadata.masterKeyChangeRec =
+            KdbxXmlReader.readNumber(reader);
           break;
         case 'MasterKeyChangeForce':
-          // m_meta->setMasterKeyChangeForce(readNumber());
+          database.metadata.masterKeyChangeForce =
+            KdbxXmlReader.readNumber(reader);
           break;
         case 'MemoryProtection':
           // parseMemoryProtection();
@@ -120,42 +127,47 @@ export default class KdbxXmlReader {
           // parseCustomIcons();
           break;
         case 'RecycleBinEnabled':
-          // m_meta->setRecycleBinEnabled(readBool());
+          database.metadata.recycleBinEnabled =
+            KdbxXmlReader.readBoolean(reader);
           break;
         case 'RecycleBinUUID':
-          // m_meta->setRecycleBin(getGroup(readUuid()));
+          database.metadata.recycleBinUuid = await this.readUuid(reader);
           break;
         case 'RecycleBinChanged':
-          // m_meta->setRecycleBinChanged(readDateTime());
+          database.metadata.recycleBinChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
         case 'EntryTemplatesGroup':
-          // m_meta->setEntryTemplatesGroup(getGroup(readUuid()));
+          database.metadata.entryTemplatesGroup = await this.readUuid(reader);
           break;
         case 'EntryTemplatesGroupChanged':
-          // m_meta->setEntryTemplatesGroupChanged(readDateTime());
+          database.metadata.entryTemplatesGroupChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
         case 'LastSelectedGroup':
-          // m_meta->setLastSelectedGroup(getGroup(readUuid()));
+          database.metadata.lastSelectedGroup = await this.readUuid(reader);
           break;
         case 'LastTopVisibleGroup':
-          // m_meta->setLastTopVisibleGroup(getGroup(readUuid()));
+          database.metadata.lastTopVisibleGroup = await this.readUuid(reader);
           break;
-        case 'HistoryMaxItems':
-          // int value = readNumber();
-          // if (value >= -1) {
-          //   m_meta->setHistoryMaxItems(value);
-          // } else {
-          //   qWarning("HistoryMaxItems invalid number");
-          // }
+        case 'HistoryMaxItems': {
+          const value = KdbxXmlReader.readNumber(reader);
+          if (value >= -1) {
+            database.metadata.historyMaxItems = value;
+          } else {
+            throw new Error('HistoryMaxItems invalid number');
+          }
           break;
-        case 'HistoryMaxSize':
-          // int value = readNumber();
-          // if (value >= -1) {
-          //   m_meta->setHistoryMaxSize(value);
-          // } else {
-          //   qWarning("HistoryMaxSize invalid number");
-          // }
+        }
+        case 'HistoryMaxSize': {
+          const value = KdbxXmlReader.readNumber(reader);
+          if (value >= -1) {
+            database.metadata.historyMaxSize = value;
+          } else {
+            throw new Error('HistoryMaxSize invalid number');
+          }
           break;
+        }
         case 'Binaries':
           // parseBinaries();
           break;
@@ -163,7 +175,8 @@ export default class KdbxXmlReader {
           // parseCustomData(m_meta->customData());
           break;
         case 'SettingsChanged':
-          // m_meta->setSettingsChanged(readDateTime());
+          database.metadata.settingsChanged =
+            KdbxXmlReader.readDateTime(reader);
           break;
       }
     }
@@ -205,7 +218,7 @@ export default class KdbxXmlReader {
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
         case 'UUID': {
-          const uuid = KdbxXmlReader.readUuid(reader);
+          const uuid = await this.readUuid(reader);
           if (uuid === null) {
             throw new Error('Null group uuid');
           } else {
@@ -231,7 +244,7 @@ export default class KdbxXmlReader {
           group.iconNumber = KdbxXmlReader.readNumber(reader);
           break;
         case 'CustomIconUUID':
-          group.customIcon = KdbxXmlReader.readUuid(reader);
+          group.customIcon = await this.readUuid(reader);
           break;
         case 'Group': {
           group.children.push(await this.parseGroup(reader.readFromCurrent()));
@@ -267,7 +280,7 @@ export default class KdbxXmlReader {
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
         case 'UUID': {
-          uuid = KdbxXmlReader.readUuid(reader);
+          uuid = await this.readUuid(reader);
           if (uuid === null) {
             throw new Error('Null entry uuid');
           }
@@ -441,9 +454,13 @@ export default class KdbxXmlReader {
     return parseInt(text, radix);
   }
 
-  private static readUuid(reader: XmlReader): Uuid {
-    const text = reader.readElementText();
-    return uuidStringify(Uint8ArrayWriter.fromBase64(text));
+  private async readUuid(reader: XmlReader): Promise<Uuid> {
+    const data = await this.readBinary(reader);
+    if (data.byteLength !== UUID_SIZE) {
+      throw new Error('Invalid uuid value');
+    }
+
+    return uuidStringify(data);
   }
 
   private static readDateTime(reader: XmlReader): Date {
@@ -485,6 +502,19 @@ export default class KdbxXmlReader {
     }
 
     throw new Error(`Invalid bool value "${value}"`);
+  }
+
+  private static readColor(reader: XmlReader): string {
+    const colorString = KdbxXmlReader.readString(reader);
+    if (!colorString.length) {
+      return colorString;
+    }
+
+    if (!colorString.match(/^#[0-f]{6}$/)) {
+      throw new Error('Invalid color value');
+    }
+
+    return colorString;
   }
 
   private async readBinary(reader: XmlReader): Promise<Uint8Array> {
