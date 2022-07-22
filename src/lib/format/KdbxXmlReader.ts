@@ -1,5 +1,5 @@
 import {CustomDataItem, Database, DeletedObject} from '../core/Database';
-import Entry from '../core/Entry';
+import Entry, {AutoTypeAssociation} from '../core/Entry';
 import Group, {TriState} from '../core/Group';
 import Icon from '../core/Icon';
 import TimeInfo from '../core/TimeInfo';
@@ -456,6 +456,7 @@ export default class KdbxXmlReader {
     const entry: Entry = {
       attachments: {},
       attributes: {},
+      autoTypeAssociations: [],
       customData: {},
       history: [],
       protectedAttributes: [],
@@ -523,7 +524,9 @@ export default class KdbxXmlReader {
           entry.qualityCheck = KdbxXmlReader.readBoolean(reader);
           break;
         // TODO Binary
-        // TODO AutoType
+        case 'AutoType':
+          KdbxXmlReader.parseAutoType(reader.readFromCurrent(), entry);
+          break;
         case 'PreviousParentGroup':
           entry.previousParentGroup = await this.readUuid(reader);
           break;
@@ -591,6 +594,60 @@ export default class KdbxXmlReader {
     }
 
     return [key, value, isProtected ?? false];
+  }
+
+  private static parseAutoType(reader: XmlReader, entry: Entry): void {
+    KdbxXmlReader.assertOpenedTagOf(reader, 'AutoType');
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Enabled':
+          entry.autoTypeEnabled = KdbxXmlReader.readBoolean(reader);
+          break;
+        case 'DataTransferObfuscation':
+          entry.autoTypeObfuscation = KdbxXmlReader.readNumber(reader);
+          break;
+        case 'DefaultSequence':
+          entry.defaultAutoTypeSequence = KdbxXmlReader.readString(reader);
+          break;
+        case 'Association':
+          entry.autoTypeAssociations.push(
+            KdbxXmlReader.parseAutoTypeAssociation(reader.readFromCurrent()),
+          );
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+  }
+
+  private static parseAutoTypeAssociation(
+    reader: XmlReader,
+  ): AutoTypeAssociation {
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Association');
+
+    const association: AutoTypeAssociation = {};
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Window':
+          association.window = KdbxXmlReader.readString(reader);
+          break;
+        case 'KeystrokeSequence':
+          association.sequence = KdbxXmlReader.readString(reader);
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    if (!association.window || !association.sequence) {
+      throw new Error('Auto-type association window or sequence missing');
+    }
+
+    return association;
   }
 
   private static async parseTimes(reader: XmlReader): Promise<TimeInfo> {
