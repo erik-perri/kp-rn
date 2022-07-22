@@ -38,11 +38,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseKeePassFile(reader: XmlReader, database: Database) {
-    if (!reader.current().isOpen || reader.current().name !== 'KeePassFile') {
-      throw new Error(
-        `Expected "KeePassFile", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'KeePassFile');
 
     let rootElementFound = false;
 
@@ -67,9 +63,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseMeta(reader: XmlReader, database: Database) {
-    if (!reader.current().isOpen || reader.current().name !== 'Meta') {
-      throw new Error(`Expected "Meta", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Meta');
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
@@ -180,11 +174,7 @@ export default class KdbxXmlReader {
   private static parseCustomData(
     reader: XmlReader,
   ): Record<string, CustomDataItem> {
-    if (!reader.current().isOpen || reader.current().name !== 'CustomData') {
-      throw new Error(
-        `Expected "CustomData", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'CustomData');
 
     const customData: Record<string, CustomDataItem> = {};
 
@@ -211,11 +201,7 @@ export default class KdbxXmlReader {
   }
 
   private static parseCustomDataItem(reader: XmlReader): CustomDataItem {
-    if (!reader.current().isOpen || reader.current().name !== 'Item') {
-      throw new Error(
-        `Expected "CustomData", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Item');
 
     const customData: CustomDataItem = {};
 
@@ -240,14 +226,7 @@ export default class KdbxXmlReader {
   }
 
   private static parseMemoryProtection(reader: XmlReader, database: Database) {
-    if (
-      !reader.current().isOpen ||
-      reader.current().name !== 'MemoryProtection'
-    ) {
-      throw new Error(
-        `Expected "MemoryProtection", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'MemoryProtection');
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
@@ -274,11 +253,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseCustomIcons(reader: XmlReader, database: Database) {
-    if (!reader.current().isOpen || reader.current().name !== 'CustomIcons') {
-      throw new Error(
-        `Expected "CustomIcons", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'CustomIcons');
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
@@ -298,9 +273,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseIcon(reader: XmlReader): Promise<Icon> {
-    if (!reader.current().isOpen || reader.current().name !== 'Icon') {
-      throw new Error(`Expected "Icon", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Icon');
 
     const icon: Icon = {};
 
@@ -328,9 +301,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseRoot(reader: XmlReader, database: Database) {
-    if (!reader.current().isOpen || reader.current().name !== 'Root') {
-      throw new Error(`Expected "Root", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Root');
 
     while (reader.readNextStartElement()) {
       switch (reader.current().name) {
@@ -354,9 +325,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseGroup(reader: XmlReader): Promise<Group> {
-    if (!reader.current().isOpen || reader.current().name !== 'Group') {
-      throw new Error(`Expected "Group", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Group');
 
     const group: Group = {
       entries: [],
@@ -434,14 +403,7 @@ export default class KdbxXmlReader {
   private async parseDeletedObjects(
     reader: XmlReader,
   ): Promise<DeletedObject[]> {
-    if (
-      !reader.current().isOpen ||
-      reader.current().name !== 'DeletedObjects'
-    ) {
-      throw new Error(
-        `Expected "DeletedObjects", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'DeletedObjects');
 
     const objects: DeletedObject[] = [];
 
@@ -464,11 +426,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseDeletedObject(reader: XmlReader): Promise<DeletedObject> {
-    if (!reader.current().isOpen || reader.current().name !== 'DeletedObject') {
-      throw new Error(
-        `Expected "DeletedObject", found "${reader.current().name}"`,
-      );
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'DeletedObject');
 
     const deleted: DeletedObject = {};
 
@@ -493,9 +451,7 @@ export default class KdbxXmlReader {
     reader: XmlReader,
     isInHistory: boolean = false,
   ): Promise<Entry> {
-    if (!reader.current().isOpen || reader.current().name !== 'Entry') {
-      throw new Error(`Expected "Entry", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Entry');
 
     const entry: Entry = {
       attachments: {},
@@ -587,9 +543,7 @@ export default class KdbxXmlReader {
   }
 
   private async parseHistoryItems(reader: XmlReader): Promise<Entry[]> {
-    if (!reader.current().isOpen || reader.current().name !== 'History') {
-      throw new Error(`Expected "History", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'History');
 
     const history: Entry[] = [];
 
@@ -610,9 +564,7 @@ export default class KdbxXmlReader {
   private async parseEntryString(
     reader: XmlReader,
   ): Promise<[string, string, boolean]> {
-    if (!reader.current().isOpen || reader.current().name !== 'String') {
-      throw new Error(`Expected "String", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'String');
 
     let key: string | undefined;
     let value: string | undefined;
@@ -642,9 +594,7 @@ export default class KdbxXmlReader {
   }
 
   private static async parseTimes(reader: XmlReader): Promise<TimeInfo> {
-    if (!reader.current().isOpen || reader.current().name !== 'Times') {
-      throw new Error(`Expected "Times", found "${reader.current().name}"`);
-    }
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Times');
 
     const timeInfo: TimeInfo = {};
 
@@ -819,5 +769,17 @@ export default class KdbxXmlReader {
     return Boolean(
       input.match(/(^(?:[a-z\d+/]{4})*(?:[a-z\d+/]{3}=|[a-z\d+/]{2}==)?$)/i),
     );
+  }
+
+  private static assertOpenedTagOf(reader: XmlReader, tagName: string): void {
+    if (reader.current().name !== tagName) {
+      throw new Error(
+        `Expected "${tagName}", found "${reader.current().name}"`,
+      );
+    }
+
+    if (!reader.current().isOpen) {
+      throw new Error(`Expected open tag of "${tagName}", close found`);
+    }
   }
 }
