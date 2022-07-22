@@ -371,7 +371,9 @@ export default class KdbxXmlReader {
           group.entries.push(await this.parseEntry(reader.readFromCurrent()));
           break;
         case 'CustomData':
-          group.customData = KdbxXmlReader.parseCustomData(reader);
+          group.customData = KdbxXmlReader.parseCustomData(
+            reader.readFromCurrent(),
+          );
           break;
         case 'IsExpanded':
           group.isExpanded = KdbxXmlReader.readBoolean(reader);
@@ -500,7 +502,9 @@ export default class KdbxXmlReader {
           );
           break;
         case 'CustomData':
-          entry.customData = KdbxXmlReader.parseCustomData(reader);
+          entry.customData = KdbxXmlReader.parseCustomData(
+            reader.readFromCurrent(),
+          );
           break;
         case 'IconID':
           entry.iconNumber = KdbxXmlReader.readNumber(reader);
