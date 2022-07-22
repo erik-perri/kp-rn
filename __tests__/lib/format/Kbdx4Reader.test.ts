@@ -49,15 +49,25 @@ describe('Kbd4Reader', () => {
 
     expect(database.metadata.generator).toEqual('KeePassXC');
     expect(database.metadata.name).toEqual('Sample');
-    expect(database.rootGroup?.entries?.[0]?.attributes?.Password).toEqual(
+    expect(database.metadata.historyMaxItems).toEqual(10);
+    expect(database.metadata.historyMaxSize).toEqual(6 * 1024 * 1024);
+    expect(database.metadata.recycleBinUuid).toEqual(
+      '27cba30e-e92e-45ab-98db-48a63f389e8b',
+    );
+
+    expect(database.rootGroup?.entries?.[0]?.attributes.Password).toEqual(
       'password',
     );
     expect(
-      database.rootGroup?.entries?.[0]?.attributes?.['Protected Attribute'],
+      database.rootGroup?.entries?.[0]?.attributes['Protected Attribute'],
     ).toEqual('Protected');
-    expect(database.rootGroup?.entries?.[0]?.protectedAttributes).toEqual([
-      'Password',
-      'Protected Attribute',
-    ]);
+
+    // Since the recycle group should be at the end this will check that the
+    // entries were decrypted in the correct stream order.
+    const childrenCount = database.rootGroup?.children.length ?? 0;
+    expect(
+      database.rootGroup?.children?.[childrenCount - 1]?.entries?.[0]
+        ?.attributes.Password,
+    ).toEqual('deleted');
   });
 });
