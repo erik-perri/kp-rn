@@ -27,7 +27,7 @@ export default class KdbxXmlReader {
     const dataAsString = Uint8ArrayReader.toString(data);
     const reader = new XmlReader(dataAsString);
 
-    if (!reader.current().isMeta) {
+    if (!reader.current.isMeta) {
       throw new Error('Unexpected database format, no XML header');
     }
 
@@ -43,7 +43,7 @@ export default class KdbxXmlReader {
     let rootElementFound = false;
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Meta':
           await this.parseMeta(reader.readFromCurrent(), database);
           break;
@@ -66,7 +66,7 @@ export default class KdbxXmlReader {
     KdbxXmlReader.assertOpenedTagOf(reader, 'Meta');
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Generator':
           database.metadata.generator = KdbxXmlReader.readString(reader);
           break;
@@ -179,7 +179,7 @@ export default class KdbxXmlReader {
     const customData: Record<string, CustomDataItem> = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Item': {
           const item = KdbxXmlReader.parseCustomDataItem(
             reader.readFromCurrent(),
@@ -206,7 +206,7 @@ export default class KdbxXmlReader {
     const customData: CustomDataItem = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Key':
           customData.key = KdbxXmlReader.readString(reader);
           break;
@@ -229,7 +229,7 @@ export default class KdbxXmlReader {
     KdbxXmlReader.assertOpenedTagOf(reader, 'MemoryProtection');
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'ProtectTitle':
           database.metadata.protectTitle = KdbxXmlReader.readBoolean(reader);
           break;
@@ -256,7 +256,7 @@ export default class KdbxXmlReader {
     KdbxXmlReader.assertOpenedTagOf(reader, 'CustomIcons');
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Icon':
           const icon = await this.parseIcon(reader.readFromCurrent());
           if (!icon.uuid || !icon.data) {
@@ -278,7 +278,7 @@ export default class KdbxXmlReader {
     const icon: Icon = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'UUID':
           icon.uuid = await this.readUuid(reader);
           break;
@@ -304,7 +304,7 @@ export default class KdbxXmlReader {
     KdbxXmlReader.assertOpenedTagOf(reader, 'Root');
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Group':
           if (database.rootGroup) {
             throw new Error('Multiple group elements');
@@ -334,7 +334,7 @@ export default class KdbxXmlReader {
     };
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'UUID': {
           const uuid = await this.readUuid(reader);
           if (uuid === null) {
@@ -409,12 +409,12 @@ export default class KdbxXmlReader {
 
     const objects: DeletedObject[] = [];
 
-    if (reader.current().isClose) {
+    if (reader.current.isClose) {
       return objects;
     }
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'DeletedObject':
           objects.push(await this.parseDeletedObject(reader.readFromCurrent()));
           break;
@@ -433,7 +433,7 @@ export default class KdbxXmlReader {
     const deleted: DeletedObject = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'UUID':
           deleted.uuid = await this.readUuid(reader);
           break;
@@ -467,7 +467,7 @@ export default class KdbxXmlReader {
     let uuid: Uuid | undefined;
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'UUID': {
           uuid = await this.readUuid(reader);
           if (uuid === null) {
@@ -563,7 +563,7 @@ export default class KdbxXmlReader {
     const history: Entry[] = [];
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Entry':
           history.push(await this.parseEntry(reader.readFromCurrent(), true));
           break;
@@ -586,7 +586,7 @@ export default class KdbxXmlReader {
     let isProtected: boolean | undefined;
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Key':
           key = KdbxXmlReader.readString(reader);
           break;
@@ -615,16 +615,16 @@ export default class KdbxXmlReader {
     let ref: string | undefined;
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Key':
           key = KdbxXmlReader.readString(reader);
           break;
         case 'Value':
-          if (!reader.current().attributes.Ref) {
+          if (!reader.current.attributes.Ref) {
             throw new Error('Inline Binary not implemented');
           }
 
-          ref = reader.current().attributes.Ref;
+          ref = reader.current.attributes.Ref;
           break;
         default:
           reader.skipCurrentElement();
@@ -643,7 +643,7 @@ export default class KdbxXmlReader {
     KdbxXmlReader.assertOpenedTagOf(reader, 'AutoType');
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Enabled':
           entry.autoTypeEnabled = KdbxXmlReader.readBoolean(reader);
           break;
@@ -673,7 +673,7 @@ export default class KdbxXmlReader {
     const association: AutoTypeAssociation = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'Window':
           association.window = KdbxXmlReader.readString(reader);
           break;
@@ -702,7 +702,7 @@ export default class KdbxXmlReader {
     const timeInfo: TimeInfo = {};
 
     while (reader.readNextStartElement()) {
-      switch (reader.current().name) {
+      switch (reader.current.name) {
         case 'LastModificationTime':
           timeInfo.lastModificationTime = KdbxXmlReader.readDateTime(reader);
           break;
@@ -734,7 +734,7 @@ export default class KdbxXmlReader {
   }
 
   private static readString(reader: XmlReader): string {
-    if (reader.current().isClose) {
+    if (reader.current.isClose) {
       return '';
     }
 
@@ -744,8 +744,8 @@ export default class KdbxXmlReader {
   private async readPotentiallyProtectedString(
     reader: XmlReader,
   ): Promise<[string, boolean]> {
-    const isProtected = KdbxXmlReader.isProtected(reader.current());
-    if (reader.current().isClose) {
+    const isProtected = KdbxXmlReader.isProtected(reader.current);
+    if (reader.current.isClose) {
       return ['', isProtected];
     }
 
@@ -858,7 +858,7 @@ export default class KdbxXmlReader {
   private async readBinary(reader: XmlReader): Promise<Uint8Array> {
     const value = reader.readElementText();
     let data = Uint8ArrayWriter.fromBase64(value);
-    if (KdbxXmlReader.isProtected(reader.current())) {
+    if (KdbxXmlReader.isProtected(reader.current)) {
       data = await this.randomStream.process(data);
     }
     return data;
@@ -875,13 +875,11 @@ export default class KdbxXmlReader {
   }
 
   private static assertOpenedTagOf(reader: XmlReader, tagName: string): void {
-    if (reader.current().name !== tagName) {
-      throw new Error(
-        `Expected "${tagName}", found "${reader.current().name}"`,
-      );
+    if (reader.current.name !== tagName) {
+      throw new Error(`Expected "${tagName}", found "${reader.current.name}"`);
     }
 
-    if (!reader.current().isOpen) {
+    if (!reader.current.isOpen) {
       throw new Error(`Expected open tag of "${tagName}", close found`);
     }
   }

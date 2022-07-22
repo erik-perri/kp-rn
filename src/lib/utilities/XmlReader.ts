@@ -23,7 +23,7 @@ export class XmlReader {
     this.currentElement = firstElement;
   }
 
-  current(): XmlElement {
+  get current(): XmlElement {
     return this.currentElement;
   }
 
@@ -110,7 +110,7 @@ export class XmlReader {
 
   private findEndOfCurrentElement(): XmlElement | undefined {
     let openChildTags = 0;
-    let endTag = this.readNextTag(this.current().position[1]);
+    let endTag = this.readNextTag(this.currentElement.position[1]);
     if (!endTag) {
       return undefined;
     }
