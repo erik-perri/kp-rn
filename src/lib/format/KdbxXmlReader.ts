@@ -24,7 +24,7 @@ export default class KdbxXmlReader {
   }
 
   async readDatabase(data: Uint8Array, database: Database): Promise<void> {
-    const dataAsString = String.fromCharCode(...data);
+    const dataAsString = Uint8ArrayReader.toString(data);
     const reader = new XmlReader(dataAsString);
 
     if (!reader.current().isMeta) {
@@ -704,7 +704,7 @@ export default class KdbxXmlReader {
     const data = await this.randomStream.process(
       Uint8ArrayWriter.fromBase64(text),
     );
-    return [String.fromCharCode(...data), isProtected];
+    return [Uint8ArrayReader.toString(data), isProtected];
   }
 
   private static readNumber(reader: XmlReader, radix: number = 10): number {

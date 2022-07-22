@@ -1,4 +1,5 @@
 import {Cipher} from '../crypto/SymmetricCipher';
+import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
 import {stringifyUuid} from '../utilities/uuid';
 import {
@@ -125,6 +126,6 @@ export default class Kdbx4XmlReader {
       Uint8ArrayWriter.fromBase64(value),
     );
 
-    return String.fromCharCode(...decrypted);
+    return Uint8ArrayReader.toString(decrypted);
   }
 }

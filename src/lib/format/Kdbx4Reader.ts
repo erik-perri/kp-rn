@@ -151,7 +151,7 @@ export default class Kdbx4Reader extends KdbxReader {
           throw new Error('Invalid variant map entry name data');
         }
       }
-      const name = String.fromCharCode(...nameBytes);
+      const name = Uint8ArrayReader.toString(nameBytes);
 
       const valueLen = reader.readUInt32LE();
       let valueBytes = new Uint8Array(0);
@@ -204,7 +204,7 @@ export default class Kdbx4Reader extends KdbxReader {
           break;
 
         case VariantMapFieldType.String:
-          map[name] = String.fromCharCode(...valueBytes);
+          map[name] = Uint8ArrayReader.toString(valueBytes);
           break;
 
         case VariantMapFieldType.ByteArray:

@@ -23,20 +23,24 @@ export default class Uint8ArrayReader {
     return true;
   }
 
-  static toInt32LE(bytes: Uint8Array) {
+  static toInt32LE(bytes: Uint8Array): number {
     return new Uint8ArrayReader(bytes).readInt32LE(0);
   }
 
-  static toUInt32LE(bytes: Uint8Array) {
+  static toUInt32LE(bytes: Uint8Array): number {
     return new Uint8ArrayReader(bytes).readUInt32LE(0);
   }
 
-  static toInt64LE(bytes: Uint8Array) {
+  static toInt64LE(bytes: Uint8Array): BigInteger {
     return new Uint8ArrayReader(bytes).readInt64LE(0);
   }
 
-  static toUInt64LE(bytes: Uint8Array) {
+  static toUInt64LE(bytes: Uint8Array): BigInteger {
     return new Uint8ArrayReader(bytes).readUInt64LE(0);
+  }
+
+  static toString(bytes: Uint8Array): string {
+    return new Uint8ArrayReader(bytes).readString(0);
   }
 
   readInt8(offset: number): number {
@@ -202,6 +206,14 @@ export default class Uint8ArrayReader {
       last * 2 ** 24;
 
     return bigInt(lo).add(bigInt(hi).shiftLeft(32));
+  }
+
+  readString(offset: number): string {
+    let buffer = '';
+    for (let index = offset ?? 0; index < this.bytes.byteLength; index++) {
+      buffer += String.fromCharCode(this.bytes[index]);
+    }
+    return buffer;
   }
 
   slice(start?: number, end?: number): Uint8Array {
