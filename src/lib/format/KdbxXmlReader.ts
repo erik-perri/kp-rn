@@ -527,7 +527,15 @@ export default class KdbxXmlReader {
         case 'QualityCheck':
           entry.qualityCheck = KdbxXmlReader.readBoolean(reader);
           break;
-        // TODO Binary
+        case 'Binary':
+          const [key, ref] = KdbxXmlReader.parseEntryBinary(
+            reader.readFromCurrent(),
+          );
+          if (!this.binaryPool[ref]) {
+            throw new Error(`Unknown Binary ref "${ref}"`);
+          }
+          entry.attachments[key] = this.binaryPool[ref];
+          break;
         case 'AutoType':
           KdbxXmlReader.parseAutoType(reader.readFromCurrent(), entry);
           break;
@@ -598,6 +606,37 @@ export default class KdbxXmlReader {
     }
 
     return [key, value, isProtected ?? false];
+  }
+
+  private static parseEntryBinary(reader: XmlReader): [string, string] {
+    KdbxXmlReader.assertOpenedTagOf(reader, 'Binary');
+
+    let key: string | undefined;
+    let ref: string | undefined;
+
+    while (reader.readNextStartElement()) {
+      switch (reader.current().name) {
+        case 'Key':
+          key = KdbxXmlReader.readString(reader);
+          break;
+        case 'Value':
+          if (!reader.current().attributes.Ref) {
+            throw new Error('Inline Binary not implemented');
+          }
+
+          ref = reader.current().attributes.Ref;
+          break;
+        default:
+          reader.skipCurrentElement();
+          break;
+      }
+    }
+
+    if (!key || !ref) {
+      throw new Error();
+    }
+
+    return [key, ref];
   }
 
   private static parseAutoType(reader: XmlReader, entry: Entry): void {
