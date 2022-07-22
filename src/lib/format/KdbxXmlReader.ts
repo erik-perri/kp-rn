@@ -686,7 +686,10 @@ export default class KdbxXmlReader {
       }
     }
 
-    if (!association.window || !association.sequence) {
+    if (
+      association.window === undefined ||
+      association.sequence === undefined
+    ) {
       throw new Error('Auto-type association window or sequence missing');
     }
 
