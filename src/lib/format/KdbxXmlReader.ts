@@ -633,7 +633,7 @@ export default class KdbxXmlReader {
     }
 
     if (!key || !ref) {
-      throw new Error();
+      throw new Error('Entry binary key or ref missing');
     }
 
     return [key, ref];
