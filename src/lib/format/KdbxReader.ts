@@ -1,11 +1,10 @@
-import {stringify as uuidStringify} from 'uuid';
-
 import {Database, toCompressionAlgorithm} from '../core/Database';
 import SymmetricCipher, {SymmetricCipherMode} from '../crypto/SymmetricCipher';
 import CompositeKey from '../keys/CompositeKey';
 import {UUID_SIZE} from '../utilities/sizes';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
+import {stringifyUuid} from '../utilities/uuid';
 import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
 
 export default abstract class KdbxReader {
@@ -65,7 +64,7 @@ export default abstract class KdbxReader {
       );
     }
 
-    const uuid = uuidStringify(data);
+    const uuid = stringifyUuid(data);
     const mode = SymmetricCipher.cipherUuidToMode(uuid);
     if (mode === SymmetricCipherMode.InvalidMode) {
       throw new Error('Unsupported cipher');

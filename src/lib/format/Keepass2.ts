@@ -1,11 +1,11 @@
 import {BigInteger} from 'big-integer';
-import {stringify as uuidStringify} from 'uuid';
 
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import AesKdf from '../crypto/kdf/AesKdf';
 import Argon2Kdf, {Argon2Type} from '../crypto/kdf/Argon2Kdf';
 import Kdf from '../crypto/kdf/Kdf';
 import {UUID_SIZE} from '../utilities/sizes';
+import {stringifyUuid} from '../utilities/uuid';
 
 export const SIGNATURE_1 = 0x9aa2d903;
 export const SIGNATURE_2 = 0xb54bfb67;
@@ -159,7 +159,7 @@ export function kdfFromParameters(map: VariantFieldMap): Kdf | undefined {
     return undefined;
   }
 
-  let kdfUuid = uuidStringify(uuidBytes);
+  let kdfUuid = stringifyUuid(uuidBytes);
   if (kdfUuid === KDF_AES_KDBX3) {
     // upgrade to non-legacy AES-KDF, since KDBX3 doesn't have any KDF parameters
     kdfUuid = KDF_AES_KDBX4;

@@ -1,7 +1,6 @@
-import {stringify} from 'uuid';
-
 import {Cipher} from '../crypto/SymmetricCipher';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import {stringifyUuid} from '../utilities/uuid';
 import {
   isKeePassFile,
   KeePassEntry,
@@ -115,7 +114,7 @@ export default class Kdbx4XmlReader {
   }
 
   private static decodeUuid(value: string): string {
-    return stringify(Uint8ArrayWriter.fromBase64(value));
+    return stringifyUuid(Uint8ArrayWriter.fromBase64(value));
   }
 
   private static async decodeProtectedString(

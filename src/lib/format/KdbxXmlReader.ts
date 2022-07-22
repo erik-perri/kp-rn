@@ -1,5 +1,3 @@
-import {stringify as uuidStringify} from 'uuid';
-
 import {CustomDataItem, Database, DeletedObject} from '../core/Database';
 import Entry from '../core/Entry';
 import Group, {TriState} from '../core/Group';
@@ -10,6 +8,7 @@ import {Cipher} from '../crypto/SymmetricCipher';
 import {UUID_SIZE} from '../utilities/sizes';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import Uint8ArrayWriter from '../utilities/Uint8ArrayWriter';
+import {stringifyUuid} from '../utilities/uuid';
 import {XmlElement, XmlReader} from '../utilities/XmlReader';
 import {FILE_VERSION_4} from './Keepass2';
 
@@ -733,7 +732,7 @@ export default class KdbxXmlReader {
       throw new Error('Invalid uuid value');
     }
 
-    return uuidStringify(data);
+    return stringifyUuid(data);
   }
 
   private static readDateTime(reader: XmlReader): Date {
