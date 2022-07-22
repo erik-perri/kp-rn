@@ -269,7 +269,15 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
-    implementation 'org.signal:argon2:13.1@aar'
+
+    // Argon2 KDF
+    implementation "org.signal:argon2:13.1@aar"
+
+    // Yubikey Support
+    implementation "com.yubico.yubikit:android:2.0.0"
+    implementation 'com.yubico.yubikit:management:2.0.0'
+    implementation "com.yubico.yubikit:yubiotp:2.0.0"
+
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'

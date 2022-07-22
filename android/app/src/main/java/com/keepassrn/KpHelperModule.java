@@ -12,7 +12,10 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.yubico.yubikit.yubiotp.Slot;
 
 import org.signal.argon2.Argon2;
 import org.signal.argon2.MemoryCost;
@@ -22,6 +25,8 @@ import org.signal.argon2.Version;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Locale;
 
 public class KpHelperModule extends ReactContextBaseJavaModule {
     KpHelperModule(ReactApplicationContext context) {
@@ -227,6 +232,31 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             KpHelper.destroyCipher(uuid);
 
             promise.resolve(null);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void getHardwareKeys(Promise promise) {
+        try {
+            MainActivity mainActivity = (MainActivity) getCurrentActivity();
+            assert mainActivity != null;
+
+            Collection<MainActivity.DeviceOption> devices = mainActivity.getAvailableDevices();
+
+            WritableMap deviceOptions = new WritableNativeMap();
+
+            for (MainActivity.DeviceOption option : devices) {
+                deviceOptions.putString(option.uuid, String.format(
+                        Locale.ENGLISH,
+                        "YubiKey [%d] Slot %d",
+                        option.serialNumber,
+                        option.slot == Slot.ONE ? 1 : 2
+                ));
+            }
+
+            promise.resolve(deviceOptions);
         } catch (Exception e) {
             promise.reject(e);
         }

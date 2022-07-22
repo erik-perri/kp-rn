@@ -7,7 +7,10 @@ buildscript {
         buildToolsVersion = "31.0.0"
         minSdkVersion = 21
         compileSdkVersion = 31
-        targetSdkVersion = 31
+
+        // Reduced to 30 until a new Yubikit version is released, or a fix is backported
+        // https://github.com/Yubico/yubikit-android/issues/48
+        targetSdkVersion = 30
 
         if (System.properties['os.arch'] == "aarch64") {
             // For M1 Users we need to use the NDK 24 which added support for aarch64

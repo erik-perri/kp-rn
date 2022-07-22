@@ -1,4 +1,5 @@
-import {NativeModules} from 'react-native';
+import {useCallback, useEffect, useState} from 'react';
+import {NativeEventEmitter, NativeModules} from 'react-native';
 
 import {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import {Argon2Type, Argon2Version} from '../crypto/kdf/Argon2Kdf';
@@ -57,6 +58,8 @@ export interface NativeHelperModule {
   finishCipher(uuid: string, data: number[]): Promise<number[]>;
 
   destroyCipher(uuid: string): Promise<boolean>;
+
+  getHardwareKeys(): Promise<Record<string, string>>;
 }
 
 class CipherHandler implements Cipher {
@@ -172,3 +175,29 @@ export class LocalHelperModule {
 }
 
 export default new LocalHelperModule(KpHelperModule as NativeHelperModule);
+
+export const useHardwareKeyList = () => {
+  const [data, setData] = useState<Record<string, string>>({});
+
+  const refreshLogs = useCallback(async () => {
+    const keys = await KpHelperModule.getHardwareKeys();
+
+    setData(keys);
+  }, []);
+
+  useEffect(() => {
+    refreshLogs().then();
+
+    const eventEmitter = new NativeEventEmitter();
+    const eventListener = eventEmitter.addListener(
+      'onDevicesChanged',
+      refreshLogs,
+    );
+
+    return () => {
+      eventListener.remove();
+    };
+  }, [refreshLogs]);
+
+  return data;
+};
