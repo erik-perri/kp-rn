@@ -96,7 +96,10 @@ const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
         throw new Error('No active file to add key to');
       }
 
-      const keys: KeySetting[] = [...activeFile.keys, key];
+      const keys: KeySetting[] = [
+        ...activeFile.keys.filter(existing => existing.type !== key.type),
+        key,
+      ];
 
       await setFile(activeFile.file, keys);
     },
