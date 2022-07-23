@@ -17,10 +17,10 @@ import {
   HeaderFieldId,
   hmacKey as keepass2HmacKey,
   InnerHeaderFieldId,
+  isHeaderFieldId,
+  isInnerHeaderFieldId,
+  isVariantMapFieldType,
   kdfFromParameters,
-  toHeaderFieldId,
-  toInnerHeaderFieldId,
-  toVariantMapFieldType,
   VariantFieldMap,
   VARIANTMAP_CRITICAL_MASK,
   VARIANTMAP_VERSION,
@@ -36,7 +36,7 @@ export default class Kdbx4Reader extends KdbxReader {
     database: Database,
   ): boolean {
     const fieldId = reader.readInt8();
-    if (!toHeaderFieldId(fieldId)) {
+    if (!isHeaderFieldId(fieldId)) {
       throw new Error('Invalid header id size');
     }
 
@@ -135,7 +135,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
     while (true) {
       const fieldType = reader.readInt8();
-      if (!toVariantMapFieldType(fieldType)) {
+      if (!isVariantMapFieldType(fieldType)) {
         throw new Error('Invalid variant map field type');
       }
 
@@ -350,7 +350,7 @@ export default class Kdbx4Reader extends KdbxReader {
 
   protected readInnerHeaderField(reader: Uint8ArrayCursorReader): boolean {
     const fieldId = reader.readInt8();
-    if (!toInnerHeaderFieldId(fieldId)) {
+    if (!isInnerHeaderFieldId(fieldId)) {
       throw new Error('Invalid inner header id size');
     }
 

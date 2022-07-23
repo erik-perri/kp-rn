@@ -12,7 +12,7 @@ export enum CompressionAlgorithm {
   CompressionGZip = 1,
 }
 
-export function toCompressionAlgorithm(id: number): id is CompressionAlgorithm {
+export function isCompressionAlgorithm(id: number): id is CompressionAlgorithm {
   return (
     id >= CompressionAlgorithm.CompressionNone &&
     id <= CompressionAlgorithm.CompressionGZip

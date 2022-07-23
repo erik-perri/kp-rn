@@ -86,7 +86,7 @@ export enum HeaderFieldId {
   PublicCustomData = 12,
 }
 
-export function toHeaderFieldId(id: number): id is HeaderFieldId {
+export function isHeaderFieldId(id: number): id is HeaderFieldId {
   return (
     id >= HeaderFieldId.EndOfHeader && id <= HeaderFieldId.PublicCustomData
   );
@@ -99,7 +99,7 @@ export enum InnerHeaderFieldId {
   Binary = 3,
 }
 
-export function toInnerHeaderFieldId(id: number): id is InnerHeaderFieldId {
+export function isInnerHeaderFieldId(id: number): id is InnerHeaderFieldId {
   return id >= InnerHeaderFieldId.End || id <= InnerHeaderFieldId.Binary;
 }
 
@@ -110,7 +110,7 @@ export enum ProtectedStreamAlgo {
   InvalidProtectedStreamAlgo = -1,
 }
 
-export function toProtectedStreamAlgo(id: number): id is ProtectedStreamAlgo {
+export function isProtectedStreamAlgo(id: number): id is ProtectedStreamAlgo {
   return (
     id >= ProtectedStreamAlgo.ArcFourVariant ||
     id <= ProtectedStreamAlgo.ChaCha20
@@ -146,7 +146,7 @@ export type VariantFieldTypes =
   | Uint8Array;
 export type VariantFieldMap = Record<string, VariantFieldTypes>;
 
-export function toVariantMapFieldType(id: number): id is VariantMapFieldType {
+export function isVariantMapFieldType(id: number): id is VariantMapFieldType {
   return id >= VariantMapFieldType.End || id <= VariantMapFieldType.ByteArray;
 }
 

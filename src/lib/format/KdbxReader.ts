@@ -1,11 +1,11 @@
-import {Database, toCompressionAlgorithm} from '../core/Database';
+import {Database, isCompressionAlgorithm} from '../core/Database';
 import SymmetricCipher, {SymmetricCipherMode} from '../crypto/SymmetricCipher';
 import CompositeKey from '../keys/CompositeKey';
 import {UUID_SIZE} from '../utilities/sizes';
 import Uint8ArrayCursorReader from '../utilities/Uint8ArrayCursorReader';
 import Uint8ArrayReader from '../utilities/Uint8ArrayReader';
 import {stringifyUuid} from '../utilities/uuid';
-import {ProtectedStreamAlgo, toProtectedStreamAlgo} from './Keepass2';
+import {isProtectedStreamAlgo, ProtectedStreamAlgo} from './Keepass2';
 
 export default abstract class KdbxReader {
   private masterSeed?: Uint8Array;
@@ -79,7 +79,7 @@ export default abstract class KdbxReader {
     }
 
     const id = Uint8ArrayReader.toUInt32LE(data);
-    if (!toCompressionAlgorithm(id)) {
+    if (!isCompressionAlgorithm(id)) {
       throw new Error('Unsupported compression algorithm');
     }
 
@@ -130,7 +130,7 @@ export default abstract class KdbxReader {
 
     const id = Uint8ArrayReader.toUInt32LE(data);
     if (
-      !toProtectedStreamAlgo(id) ||
+      !isProtectedStreamAlgo(id) ||
       [
         ProtectedStreamAlgo.InvalidProtectedStreamAlgo,
         ProtectedStreamAlgo.ArcFourVariant,
