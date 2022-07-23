@@ -143,6 +143,11 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
           );
       }
     }),
+  challengeResponse: jest
+    .fn<Promise<Uint8Array>, [string, Uint8Array]>()
+    .mockImplementation(async (_uuid, _data) => {
+      throw new Error('Not implemented');
+    }),
 };
 
 export default KpHelperModuleMock;

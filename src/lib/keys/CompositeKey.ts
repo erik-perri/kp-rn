@@ -1,6 +1,7 @@
 import CryptoHash, {CryptoHashAlgorithm} from '../crypto/CryptoHash';
 import Kdf from '../crypto/kdf/Kdf';
 import {KDF_AES_KDBX3} from '../format/Keepass2';
+import ChallengeResponseKey from './ChallengeResponseKey';
 import {Key} from './Key';
 
 export default class CompositeKey extends Key {
@@ -16,13 +17,13 @@ export default class CompositeKey extends Key {
 
   async getRawKey(transformSeed?: Uint8Array): Promise<Uint8Array> {
     const hashData: Uint8Array[] = await Promise.all(
-      this.keys.map(key => key.getRawKey()),
+      this.keys
+        .filter(key => !ChallengeResponseKey.isInstance(key))
+        .map(key => key.getRawKey()),
     );
 
     if (transformSeed) {
-      const challengeResult = this.challenge(transformSeed);
-
-      hashData.push(challengeResult);
+      hashData.push(await this.challenge(transformSeed));
     }
 
     return await CryptoHash.hash(hashData, CryptoHashAlgorithm.Sha256);
@@ -40,8 +41,20 @@ export default class CompositeKey extends Key {
     throw new Error('Not implemented');
   }
 
-  private challenge(_seed: Uint8Array): Uint8Array {
-    return new Uint8Array(0);
+  private async challenge(seed: Uint8Array): Promise<Uint8Array> {
+    const keys = this.keys.filter(ChallengeResponseKey.isInstance);
+    if (!keys.length) {
+      return new Uint8Array(0);
+    }
+
+    const responses: Uint8Array[] = [];
+    for (const key of keys) {
+      if (ChallengeResponseKey.isInstance(key)) {
+        responses.push(await key.challenge(seed));
+      }
+    }
+
+    return await CryptoHash.hash(responses, CryptoHashAlgorithm.Sha256);
   }
 
   async transform(kdf: Kdf): Promise<Uint8Array> {

@@ -16,6 +16,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.yubico.yubikit.yubiotp.Slot;
+import com.yubico.yubikit.yubiotp.YubiOtpSession;
 
 import org.signal.argon2.Argon2;
 import org.signal.argon2.MemoryCost;
@@ -248,7 +249,7 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             WritableMap deviceOptions = new WritableNativeMap();
 
             for (MainActivity.DeviceOption option : devices) {
-                deviceOptions.putString(option.uuid, String.format(
+                deviceOptions.putString(option.id, String.format(
                         Locale.ENGLISH,
                         "YubiKey [%d] Slot %d",
                         option.serialNumber,
@@ -257,6 +258,36 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             }
 
             promise.resolve(deviceOptions);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    @ReactMethod
+    public void challengeResponse(
+            String id,
+            ReadableArray data,
+            Promise promise
+    ) {
+        try {
+            MainActivity mainActivity = (MainActivity) getCurrentActivity();
+            assert mainActivity != null;
+
+            MainActivity.DeviceOption device = mainActivity.findDevice(id);
+
+            byte[] challenge = getBytesFromArray(data);
+
+            YubiOtpSession.create(device.device, result -> {
+                try {
+                    YubiOtpSession otp = result.getValue();
+
+                    byte[] response = otp.calculateHmacSha1(device.slot, challenge, null);
+
+                    promise.resolve(getArrayFromBytes(response));
+                } catch (Exception e) {
+                    promise.reject(e);
+                }
+            });
         } catch (Exception e) {
             promise.reject(e);
         }

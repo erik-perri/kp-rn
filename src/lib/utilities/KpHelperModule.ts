@@ -60,6 +60,8 @@ export interface NativeHelperModule {
   destroyCipher(uuid: string): Promise<boolean>;
 
   getHardwareKeys(): Promise<Record<string, string>>;
+
+  challengeResponse(uuid: string, challenge: number[]): Promise<number[]>;
 }
 
 class CipherHandler implements Cipher {
@@ -170,6 +172,15 @@ export class LocalHelperModule {
     return new CipherHandler(
       this.module,
       await this.module.createCipher(mode, direction, [...key], [...iv]),
+    );
+  }
+
+  async challengeResponse(
+    uuid: string,
+    challenge: Uint8Array,
+  ): Promise<Uint8Array> {
+    return Uint8Array.from(
+      await this.module.challengeResponse(uuid, [...challenge]),
     );
   }
 }

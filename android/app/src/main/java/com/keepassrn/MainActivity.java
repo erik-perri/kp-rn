@@ -21,9 +21,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 public class MainActivity extends ReactActivity {
     private YubiKitManager yubiKitManager;
@@ -98,7 +98,7 @@ public class MainActivity extends ReactActivity {
                             if (otp.getConfigurationState().isConfigured(Slot.ONE)) {
                                 this.addDevice(device, new DeviceOption(
                                         device,
-                                        UUID.randomUUID().toString(),
+                                        String.format(Locale.ENGLISH, "%d-%d", serialNumber, 1),
                                         serialNumber,
                                         Slot.ONE
                                 ));
@@ -107,7 +107,7 @@ public class MainActivity extends ReactActivity {
                             if (otp.getConfigurationState().isConfigured(Slot.TWO)) {
                                 this.addDevice(device, new DeviceOption(
                                         device,
-                                        UUID.randomUUID().toString(),
+                                        String.format(Locale.ENGLISH, "%d-%d", serialNumber, 2),
                                         serialNumber,
                                         Slot.TWO
                                 ));
@@ -166,10 +166,10 @@ public class MainActivity extends ReactActivity {
         return options;
     }
 
-    public DeviceOption findDevice(String uuid) {
+    public DeviceOption findDevice(String id) {
         for (List<DeviceOption> deviceOptions : availableDevices.values()) {
             for (DeviceOption option : deviceOptions) {
-                if (option.uuid.equals(uuid)) {
+                if (option.id.equals(id)) {
                     return option;
                 }
             }
@@ -196,13 +196,13 @@ public class MainActivity extends ReactActivity {
         public final UsbYubiKeyDevice device;
         public final int serialNumber;
         public final Slot slot;
-        public final String uuid;
+        public final String id;
 
-        public DeviceOption(UsbYubiKeyDevice device, String uuid, int serialNumber, Slot slot) {
+        public DeviceOption(UsbYubiKeyDevice device, String id, int serialNumber, Slot slot) {
             this.device = device;
             this.serialNumber = serialNumber;
             this.slot = slot;
-            this.uuid = uuid;
+            this.id = id;
         }
     }
 }
