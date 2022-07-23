@@ -32,7 +32,10 @@ export interface KeyFileSetting {
 
 export interface KeyYubikeySetting {
   type: KeyType.ChallengeResponse;
-  data: string;
+  data: {
+    id: string;
+    name: string;
+  };
 }
 
 export type KeySetting =

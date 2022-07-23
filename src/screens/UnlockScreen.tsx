@@ -81,14 +81,14 @@ const UnlockScreen: FunctionComponent = () => {
   }, [activeFile, removeKey]);
 
   const onChooseHardwareKey = useCallback(
-    async (id: string) => {
+    async (id: string, name: string) => {
       if (!activeFile) {
         return;
       }
 
       await addKey({
         type: KeyType.ChallengeResponse,
-        data: id,
+        data: {id, name},
       });
     },
     [activeFile, addKey],
@@ -114,7 +114,7 @@ const UnlockScreen: FunctionComponent = () => {
     for (const specifiedKey of activeFile.keys) {
       switch (specifiedKey.type) {
         case KeyType.ChallengeResponse:
-          keys.push(new ChallengeResponseKey(specifiedKey.data));
+          keys.push(new ChallengeResponseKey(specifiedKey.data.id));
           break;
         case KeyType.File: {
           const fileKey = new FileKey();
@@ -228,11 +228,11 @@ const UnlockScreen: FunctionComponent = () => {
           {Object.entries(hardwareKeys).map(([id, name]) => (
             <Pressable
               key={id}
-              onPress={() => onChooseHardwareKey(id)}
+              onPress={() => onChooseHardwareKey(id, name)}
               style={styles.row}>
               <Switch
-                value={yubikeyKeySetting === id}
-                onChange={() => onChooseHardwareKey(id)}
+                value={yubikeyKeySetting?.id === id}
+                onChange={() => onChooseHardwareKey(id, name)}
               />
               <Text>{name}</Text>
             </Pressable>
