@@ -88,6 +88,9 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
               if (!cipher) {
                 throw new Error();
               }
+              if (!data.byteLength) {
+                return new Uint8Array(0);
+              }
               return direction === SymmetricCipherDirection.Encrypt
                 ? cipher.encrypt(data)
                 : cipher.decrypt(data);

@@ -301,13 +301,18 @@ export default class Kdbx4Reader extends KdbxReader {
       this.getEncryptionIV(),
     );
 
-    let readBytes: Uint8Array = new Uint8Array(0);
+    const processedBlocks: Uint8Array[] = [];
 
     while (await stream.readHashedBlock()) {
-      readBytes = new Uint8Array([...readBytes, ...stream.getBuffer()]);
+      processedBlocks.push(
+        await cipher[stream.atEnd ? 'finish' : 'process'](stream.buffer),
+      );
     }
 
-    readBytes = await cipher.finish(readBytes);
+    const processedBytes: Uint8Array = processedBlocks.reduce(
+      (previous, current) => Uint8Array.from([...previous, ...current]),
+      new Uint8Array(0),
+    );
 
     await cipher.destroy();
 
@@ -315,7 +320,7 @@ export default class Kdbx4Reader extends KdbxReader {
       database.getCompressionAlgorithm() ===
       CompressionAlgorithm.CompressionGZip;
 
-    const buffer = isCompressed ? await gunzip(readBytes) : readBytes;
+    const buffer = isCompressed ? await gunzip(processedBytes) : processedBytes;
     const bufferReader = new Uint8ArrayCursorReader(
       new Uint8ArrayReader(buffer),
     );

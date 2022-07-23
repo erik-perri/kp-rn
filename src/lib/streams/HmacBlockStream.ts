@@ -9,8 +9,8 @@ export const UINT64_MAX = bigInt('18446744073709551615'); // 0xffffffffffffffff
 
 export default class HmacBlockStream {
   private blockIndex: BigInteger = bigInt(0);
-  private atEof: boolean = false;
-  private buffer: Uint8Array = new Uint8Array(0);
+  private _atEnd: boolean = false;
+  private _buffer: Uint8Array = new Uint8Array(0);
 
   constructor(
     private readonly reader: Uint8ArrayCursorReader,
@@ -20,12 +20,16 @@ export default class HmacBlockStream {
     //
   }
 
-  getBuffer(): Uint8Array {
-    return this.buffer;
+  get buffer(): Uint8Array {
+    return this._buffer;
+  }
+
+  get atEnd(): boolean {
+    return this._atEnd;
   }
 
   async readHashedBlock(): Promise<boolean> {
-    if (this.atEof) {
+    if (this._atEnd) {
       return false;
     }
 
@@ -44,10 +48,10 @@ export default class HmacBlockStream {
       throw new Error('Invalid block size.');
     }
 
-    this.buffer = this.reader.readBytes(blockSize);
-    if (this.buffer.byteLength !== blockSize) {
+    this._buffer = this.reader.readBytes(blockSize);
+    if (this._buffer.byteLength !== blockSize) {
       throw new Error(
-        `Block size wrong. Expected ${blockSize}, read ${this.buffer.byteLength}`,
+        `Block size wrong. Expected ${blockSize}, read ${this._buffer.byteLength}`,
       );
     }
 
@@ -55,7 +59,7 @@ export default class HmacBlockStream {
       [
         Uint8ArrayWriter.fromUInt64LE(this.blockIndex),
         blockSizeBytes,
-        this.buffer,
+        this._buffer,
       ],
       await this.getCurrentHmacKey(),
       CryptoHashAlgorithm.Sha256,
@@ -65,12 +69,10 @@ export default class HmacBlockStream {
       throw new Error('Mismatch between hash and data.');
     }
 
-    // m_bufferPos = 0;
     this.blockIndex = this.blockIndex.add(1);
 
     if (blockSize === 0) {
-      this.atEof = true;
-      return false;
+      this._atEnd = true;
     }
 
     return true;
@@ -79,11 +81,7 @@ export default class HmacBlockStream {
   public reset(): void {
     this.blockIndex = bigInt(0);
     this.reader.offset = 0;
-    this.atEof = false;
-  }
-
-  public atEnd(): boolean {
-    return this.atEof;
+    this._atEnd = false;
   }
 
   private async getCurrentHmacKey() {
