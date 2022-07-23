@@ -9,7 +9,7 @@ import {
   SymmetricCipherMode,
 } from '../crypto/SymmetricCipher';
 
-const {KpHelperModule} = NativeModules;
+const {KpHelperModule: NativeModule} = NativeModules;
 
 export interface NativeHelperModule {
   transformAesKdfKey(
@@ -185,13 +185,11 @@ export class LocalHelperModule {
   }
 }
 
-export default new LocalHelperModule(KpHelperModule as NativeHelperModule);
-
 export const useHardwareKeyList = () => {
   const [data, setData] = useState<Record<string, string>>({});
 
   const refreshLogs = useCallback(async () => {
-    const keys = await KpHelperModule.getHardwareKeys();
+    const keys = await NativeModule.getHardwareKeys();
 
     setData(keys);
   }, []);
@@ -212,3 +210,9 @@ export const useHardwareKeyList = () => {
 
   return data;
 };
+
+const KpHelperModule = new LocalHelperModule(
+  NativeModule as NativeHelperModule,
+);
+
+export default KpHelperModule;

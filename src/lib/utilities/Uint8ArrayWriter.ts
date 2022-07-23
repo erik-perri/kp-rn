@@ -46,7 +46,7 @@ export default class Uint8ArrayWriter {
   }
 
   writeUInt64BE(value: BigInteger, offset: number) {
-    let lo = Number(value.and(0xffffffff));
+    let lo = value.and(0xffffffff).toJSNumber();
     this.bytes[offset + 7] = lo;
     lo = lo >> 8;
     this.bytes[offset + 6] = lo;
@@ -55,7 +55,7 @@ export default class Uint8ArrayWriter {
     lo = lo >> 8;
     this.bytes[offset + 4] = lo;
 
-    let hi = Number(value.shiftRight(32).and(0xffffffff));
+    let hi = value.shiftRight(32).and(0xffffffff).toJSNumber();
     this.bytes[offset + 3] = hi;
     hi = hi >> 8;
     this.bytes[offset + 2] = hi;
@@ -68,7 +68,7 @@ export default class Uint8ArrayWriter {
   }
 
   writeUInt64LE(value: BigInteger, offset: number) {
-    let lo = Number(value.and(0xffffffff));
+    let lo = value.and(0xffffffff).toJSNumber();
     this.bytes[offset++] = lo;
     lo = lo >> 8;
     this.bytes[offset++] = lo;
@@ -77,7 +77,7 @@ export default class Uint8ArrayWriter {
     lo = lo >> 8;
     this.bytes[offset++] = lo;
 
-    let hi = Number(value.shiftRight(32).and(0xffffffff));
+    let hi = value.shiftRight(32).and(0xffffffff).toJSNumber();
     this.bytes[offset++] = hi;
     hi = hi >> 8;
     this.bytes[offset++] = hi;

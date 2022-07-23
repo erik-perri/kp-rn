@@ -210,7 +210,7 @@ export default class Uint8ArrayReader {
 
   readString(offset: number): string {
     let buffer = '';
-    for (let index = offset ?? 0; index < this.bytes.byteLength; index++) {
+    for (let index = offset; index < this.bytes.byteLength; index++) {
       buffer += String.fromCharCode(this.bytes[index]);
     }
     return buffer;
