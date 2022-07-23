@@ -8,6 +8,7 @@ import {
   SymmetricCipherMode,
 } from '../src/lib/crypto/SymmetricCipher';
 import {LocalHelperModule} from '../src/lib/utilities/KpHelperModule';
+import Uint8ArrayReader from '../src/lib/utilities/Uint8ArrayReader';
 
 const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
   readFile: jest.fn().mockResolvedValue([]),
@@ -148,7 +149,27 @@ const KpHelperModuleMock: Omit<LocalHelperModule, 'module'> = {
     }),
   challengeResponse: jest
     .fn<Promise<Uint8Array>, [string, Uint8Array]>()
-    .mockImplementation(async (_uuid, _data) => {
+    .mockImplementation(async (_uuid, data) => {
+      const mockResponses = [
+        {
+          challenge: Uint8Array.from([
+            0xf0, 0x98, 0x38, 0x6a, 0x09, 0x55, 0xb4, 0x64, 0x47, 0x9d, 0x29,
+            0x53, 0x5c, 0x28, 0x03, 0xb7, 0xe8, 0x71, 0x31, 0x0d, 0x47, 0xf9,
+            0x41, 0x11, 0xf5, 0x2f, 0x18, 0x88, 0xd4, 0xad, 0x7a, 0xe9,
+          ]),
+          response: Uint8Array.from([
+            0xe4, 0xe1, 0x57, 0x99, 0xd3, 0x17, 0xa9, 0xdf, 0xe7, 0xc8, 0x18,
+            0x34, 0x3d, 0x64, 0x07, 0x73, 0xac, 0xc0, 0xda, 0x9e,
+          ]),
+        },
+      ];
+
+      for (const {challenge, response} of mockResponses) {
+        if (Uint8ArrayReader.equals(data, challenge)) {
+          return response;
+        }
+      }
+
       throw new Error('Not implemented');
     }),
 };

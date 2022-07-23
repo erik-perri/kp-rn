@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 
 import Kdbx4Reader from '../../../src/lib/format/Kdbx4Reader';
+import ChallengeResponseKey from '../../../src/lib/keys/ChallengeResponseKey';
 import CompositeKey from '../../../src/lib/keys/CompositeKey';
 import FileKey from '../../../src/lib/keys/FileKey';
 import PasswordKey from '../../../src/lib/keys/PasswordKey';
@@ -24,12 +25,21 @@ describe('Kbd4Reader', () => {
       },
     },
     {
-      file: '__fixtures__/sample-aes256-aes-kdf-with-key-kdbx4.kdbx',
+      file: '__fixtures__/sample-aes256-aes-kdf-with-file-key-kdbx4.kdbx',
       keyFactory: async () => {
-        const databaseKey = fs.readFileSync('__fixtures__/sample.key');
         const key = new FileKey();
+        await key.load(fs.readFileSync('__fixtures__/sample.key'));
 
-        await key.load(databaseKey);
+        const password = new PasswordKey();
+        await password.setPassword('sample');
+
+        return [password, key];
+      },
+    },
+    {
+      file: '__fixtures__/sample-aes256-aes-kdf-with-hardware-key-kdbx4.kdbx',
+      keyFactory: async () => {
+        const key = new ChallengeResponseKey('device-id');
 
         const password = new PasswordKey();
         await password.setPassword('sample');
