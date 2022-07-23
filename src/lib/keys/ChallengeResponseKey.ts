@@ -5,7 +5,7 @@ export default class ChallengeResponseKey extends Key {
   public static readonly UUID = 'e092495c-e77d-498b-84a1-05ae0d955508';
   private rawKey: Uint8Array | undefined;
 
-  constructor(private readonly deviceUuid: string) {
+  constructor(private readonly deviceId: string) {
     super(ChallengeResponseKey.UUID);
   }
 
@@ -14,7 +14,7 @@ export default class ChallengeResponseKey extends Key {
   }
 
   async challenge(data: Uint8Array): Promise<Uint8Array> {
-    return await KpHelperModule.challengeResponse(this.deviceUuid, data);
+    return await KpHelperModule.challengeResponse(this.deviceId, data);
   }
 
   async getRawKey(): Promise<Uint8Array> {

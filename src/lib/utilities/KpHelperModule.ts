@@ -61,7 +61,7 @@ export interface NativeHelperModule {
 
   getHardwareKeys(): Promise<Record<string, string>>;
 
-  challengeResponse(uuid: string, challenge: number[]): Promise<number[]>;
+  challengeResponse(deviceId: string, challenge: number[]): Promise<number[]>;
 }
 
 class CipherHandler implements Cipher {
@@ -176,11 +176,11 @@ export class LocalHelperModule {
   }
 
   async challengeResponse(
-    uuid: string,
+    deviceId: string,
     challenge: Uint8Array,
   ): Promise<Uint8Array> {
     return Uint8Array.from(
-      await this.module.challengeResponse(uuid, [...challenge]),
+      await this.module.challengeResponse(deviceId, [...challenge]),
     );
   }
 }
