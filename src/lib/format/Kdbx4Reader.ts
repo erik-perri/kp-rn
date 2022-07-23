@@ -304,14 +304,14 @@ export default class Kdbx4Reader extends KdbxReader {
     const processedBlocks: Uint8Array[] = [];
 
     while (await stream.readHashedBlock()) {
-      processedBlocks.push(
-        await cipher[stream.atEnd ? 'finish' : 'process'](stream.buffer),
-      );
+      processedBlocks.push(stream.buffer);
     }
 
-    const processedBytes: Uint8Array = processedBlocks.reduce(
-      (previous, current) => Uint8Array.from([...previous, ...current]),
-      new Uint8Array(0),
+    const processedBytes: Uint8Array = await cipher.finish(
+      processedBlocks.reduce(
+        (previous, current) => Uint8Array.from([...previous, ...current]),
+        new Uint8Array(0),
+      ),
     );
 
     await cipher.destroy();
