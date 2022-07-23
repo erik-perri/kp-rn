@@ -60,6 +60,7 @@ export interface ActiveFileState {
   activeFile: ActiveFile | undefined;
   addKey: (key: KeySetting) => Promise<void>;
   clearFile: () => Promise<void>;
+  loading: boolean;
   removeKey: (type: KeyType) => Promise<void>;
   setFile: (file: LoadedFile, keys: KeySetting[]) => Promise<void>;
 }
@@ -68,6 +69,7 @@ const ActiveFileContext = createContext<ActiveFileState>({
   activeFile: undefined,
   addKey: () => Promise.resolve(),
   clearFile: () => Promise.resolve(),
+  loading: true,
   removeKey: () => Promise.resolve(),
   setFile: () => Promise.resolve(),
 });
@@ -78,6 +80,7 @@ const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
   const [activeFile, setActiveFile] = useState<ActiveFile>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   const setFile = useCallback(async (file: LoadedFile, keys: KeySetting[]) => {
     const updatedFile: ActiveFile = {file, keys};
@@ -125,6 +128,8 @@ const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
       if (encoded) {
         setActiveFile(JSON.parse(encoded));
       }
+
+      setLoading(false);
     });
   }, []);
 
@@ -134,6 +139,7 @@ const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
         activeFile,
         addKey,
         clearFile,
+        loading,
         removeKey,
         setFile,
       }}>
