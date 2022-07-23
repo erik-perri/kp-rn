@@ -2,10 +2,10 @@ import React, {FunctionComponent, useCallback, useMemo} from 'react';
 import {Alert, Button, StyleSheet, Text, View} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
-import {useLockState} from '../components/LockStateProvider';
+import {useActiveFile} from '../components/ActiveFileProvider';
 
 const FileSelectScreen: FunctionComponent = () => {
-  const {updateFile} = useLockState();
+  const {updateFile} = useActiveFile();
 
   const onSelectFile = useCallback(async () => {
     const pickerResult = await DocumentPicker.pickSingle({

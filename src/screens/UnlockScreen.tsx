@@ -18,8 +18,9 @@ import {
   isKeyYubikeySetting,
   KeySetting,
   KeyType,
-  useLockState,
-} from '../components/LockStateProvider';
+  useActiveFile,
+} from '../components/ActiveFileProvider';
+import {useLockState} from '../components/LockStateProvider';
 import Kdbx4Reader from '../lib/format/Kdbx4Reader';
 import ChallengeResponseKey from '../lib/keys/ChallengeResponseKey';
 import CompositeKey from '../lib/keys/CompositeKey';
@@ -31,7 +32,8 @@ import KpHelperModule, {
 } from '../lib/utilities/KpHelperModule';
 
 const UnlockScreen: FunctionComponent = () => {
-  const {file, unlockDatabase, updateFile} = useLockState();
+  const {file, updateFile} = useActiveFile();
+  const {unlockDatabase} = useLockState();
   const [password, setPassword] = useState('');
   const hardwareKeys = useHardwareKeyList();
 

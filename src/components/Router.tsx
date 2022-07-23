@@ -3,10 +3,12 @@ import React, {FunctionComponent} from 'react';
 import FileSelectScreen from '../screens/FileSelectScreen';
 import IndexScreen from '../screens/IndexScreen';
 import UnlockScreen from '../screens/UnlockScreen';
+import {useActiveFile} from './ActiveFileProvider';
 import {useLockState} from './LockStateProvider';
 
 const Router: FunctionComponent = () => {
-  const {file, isUnlocked} = useLockState();
+  const {file} = useActiveFile();
+  const {isUnlocked} = useLockState();
 
   if (!file) {
     return <FileSelectScreen />;
