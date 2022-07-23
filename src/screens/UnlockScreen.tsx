@@ -16,7 +16,6 @@ import DocumentPicker from 'react-native-document-picker';
 import {
   isKeyFileSetting,
   isKeyYubikeySetting,
-  KeySetting,
   KeyType,
   useActiveFile,
 } from '../components/ActiveFileProvider';
@@ -32,28 +31,25 @@ import KpHelperModule, {
 } from '../lib/utilities/KpHelperModule';
 
 const UnlockScreen: FunctionComponent = () => {
-  const {file, updateFile} = useActiveFile();
+  const {activeFile, addKey, clearFile, removeKey} = useActiveFile();
   const {unlockDatabase} = useLockState();
   const [password, setPassword] = useState('');
   const hardwareKeys = useHardwareKeyList();
 
   const onChooseDifferentFile = useCallback(async () => {
-    await updateFile(undefined);
-  }, [updateFile]);
+    await clearFile();
+  }, [clearFile]);
 
   const onChooseNoFileKey = useCallback(async () => {
-    if (!file) {
+    if (!activeFile) {
       return;
     }
 
-    await updateFile({
-      ...file,
-      keys: file.keys?.filter(key => key.type !== KeyType.File),
-    });
-  }, [file, updateFile]);
+    await removeKey(KeyType.File);
+  }, [activeFile, removeKey]);
 
   const onChooseFileKey = useCallback(async () => {
-    if (!file) {
+    if (!activeFile) {
       return;
     }
 
@@ -66,65 +62,46 @@ const UnlockScreen: FunctionComponent = () => {
       return;
     }
 
-    const keys: KeySetting[] = [
-      ...file.keys,
-      {
-        type: KeyType.File,
-        data: {
-          name: pickerResult.name,
-          size: pickerResult.size ?? -1,
-          uri: pickerResult.fileCopyUri,
-        },
+    await addKey({
+      type: KeyType.File,
+      data: {
+        name: pickerResult.name,
+        size: pickerResult.size ?? -1,
+        uri: pickerResult.fileCopyUri,
       },
-    ];
-
-    await updateFile({
-      ...file,
-      keys,
     });
-  }, [file, updateFile]);
+  }, [activeFile, addKey]);
 
   const onChooseNoHardwareKey = useCallback(async () => {
-    if (!file) {
+    if (!activeFile) {
       return;
     }
 
-    await updateFile({
-      ...file,
-      keys: file.keys?.filter(key => key.type !== KeyType.ChallengeResponse),
-    });
-  }, [file, updateFile]);
+    await removeKey(KeyType.ChallengeResponse);
+  }, [activeFile, removeKey]);
 
   const onChooseHardwareKey = useCallback(
     async (id: string) => {
-      if (!file) {
+      if (!activeFile) {
         return;
       }
 
-      const keys: KeySetting[] = [
-        ...file.keys?.filter(key => key.type !== KeyType.ChallengeResponse),
-        {
-          type: KeyType.ChallengeResponse,
-          data: id,
-        },
-      ];
-
-      await updateFile({
-        ...file,
-        keys,
+      await addKey({
+        type: KeyType.ChallengeResponse,
+        data: id,
       });
     },
-    [file, updateFile],
+    [activeFile, addKey],
   );
 
   const onUnlock = useCallback(async () => {
-    if (!file) {
+    if (!activeFile) {
       console.error('No file');
       return;
     }
 
-    console.log('Reading file', file.file.uri);
-    const fileBytes = await KpHelperModule.readFile(file.file.uri);
+    console.log('Reading file', activeFile.file.uri);
+    const fileBytes = await KpHelperModule.readFile(activeFile.file.uri);
     console.log(`Read ${fileBytes.byteLength} bytes`);
 
     const parser = new Kdbx4Reader();
@@ -134,7 +111,7 @@ const UnlockScreen: FunctionComponent = () => {
     await passwordKey.setPassword(password);
     keys.push(passwordKey);
 
-    for (const specifiedKey of file.keys) {
+    for (const specifiedKey of activeFile.keys) {
       switch (specifiedKey.type) {
         case KeyType.ChallengeResponse:
           keys.push(new ChallengeResponseKey(specifiedKey.data));
@@ -161,7 +138,7 @@ const UnlockScreen: FunctionComponent = () => {
     );
 
     unlockDatabase(database);
-  }, [file, password, unlockDatabase]);
+  }, [activeFile, password, unlockDatabase]);
 
   const styles = useMemo(
     () =>
@@ -197,23 +174,23 @@ const UnlockScreen: FunctionComponent = () => {
   );
 
   const fileKeySetting = useMemo(
-    () => file?.keys.find(isKeyFileSetting)?.data,
-    [file],
+    () => activeFile?.keys.find(isKeyFileSetting)?.data,
+    [activeFile],
   );
 
   const yubikeyKeySetting = useMemo(
-    () => file?.keys.find(isKeyYubikeySetting)?.data,
-    [file],
+    () => activeFile?.keys.find(isKeyYubikeySetting)?.data,
+    [activeFile],
   );
 
-  if (!file) {
+  if (!activeFile) {
     return <ActivityIndicator />;
   }
 
   return (
     <SafeAreaView style={styles.root}>
       <View>
-        <Text style={styles.heading}>Unlock {file.file.name}</Text>
+        <Text style={styles.heading}>Unlock {activeFile.file.name}</Text>
         <Button title="Choose different file" onPress={onChooseDifferentFile} />
       </View>
 

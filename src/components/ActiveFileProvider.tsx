@@ -54,13 +54,19 @@ export interface ActiveFile {
 }
 
 export interface ActiveFileState {
-  file: ActiveFile | undefined;
-  updateFile: (updatedFile: ActiveFile | undefined) => Promise<void>;
+  activeFile: ActiveFile | undefined;
+  addKey: (key: KeySetting) => Promise<void>;
+  clearFile: () => Promise<void>;
+  removeKey: (type: KeyType) => Promise<void>;
+  setFile: (file: LoadedFile, keys: KeySetting[]) => Promise<void>;
 }
 
 const ActiveFileContext = createContext<ActiveFileState>({
-  file: undefined,
-  updateFile: () => Promise.resolve(),
+  activeFile: undefined,
+  addKey: () => Promise.resolve(),
+  clearFile: () => Promise.resolve(),
+  removeKey: () => Promise.resolve(),
+  setFile: () => Promise.resolve(),
 });
 
 LogBox.ignoreLogs([/AsyncStorage has been extracted/]);
@@ -68,24 +74,50 @@ LogBox.ignoreLogs([/AsyncStorage has been extracted/]);
 const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
-  const [file, setFile] = useState<ActiveFile>();
+  const [activeFile, setActiveFile] = useState<ActiveFile>();
 
-  const updateFile = useCallback(
-    async (updatedFile: ActiveFile | undefined) => {
-      setFile(updatedFile);
-      if (updatedFile) {
-        await AsyncStorage.setItem('loaded-file', JSON.stringify(updatedFile));
-      } else {
-        await AsyncStorage.removeItem('loaded-file');
+  const setFile = useCallback(async (file: LoadedFile, keys: KeySetting[]) => {
+    const updatedFile: ActiveFile = {file, keys};
+    await AsyncStorage.setItem('loaded-file', JSON.stringify(updatedFile));
+    setActiveFile(updatedFile);
+  }, []);
+
+  const clearFile = useCallback(async () => {
+    await AsyncStorage.removeItem('loaded-file');
+    setActiveFile(undefined);
+  }, []);
+
+  const addKey = useCallback(
+    async (key: KeySetting) => {
+      if (!activeFile) {
+        throw new Error('No active file to add key to');
       }
+
+      const keys: KeySetting[] = [...activeFile.keys, key];
+
+      await setFile(activeFile.file, keys);
     },
-    [],
+    [activeFile, setFile],
+  );
+
+  const removeKey = useCallback(
+    async (type: KeyType) => {
+      if (!activeFile) {
+        throw new Error('No active file to remove key from');
+      }
+
+      await setFile(
+        activeFile.file,
+        activeFile.keys.filter(key => key.type !== type),
+      );
+    },
+    [activeFile, setFile],
   );
 
   useEffect(() => {
     AsyncStorage.getItem('loaded-file').then(encoded => {
       if (encoded) {
-        setFile(JSON.parse(encoded));
+        setActiveFile(JSON.parse(encoded));
       }
     });
   }, []);
@@ -93,8 +125,11 @@ const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
   return (
     <ActiveFileContext.Provider
       value={{
-        file,
-        updateFile,
+        activeFile,
+        addKey,
+        clearFile,
+        removeKey,
+        setFile,
       }}>
       {children}
     </ActiveFileContext.Provider>

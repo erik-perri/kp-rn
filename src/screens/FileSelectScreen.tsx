@@ -5,7 +5,7 @@ import DocumentPicker from 'react-native-document-picker';
 import {useActiveFile} from '../components/ActiveFileProvider';
 
 const FileSelectScreen: FunctionComponent = () => {
-  const {updateFile} = useActiveFile();
+  const {setFile} = useActiveFile();
 
   const onSelectFile = useCallback(async () => {
     const pickerResult = await DocumentPicker.pickSingle({
@@ -16,15 +16,15 @@ const FileSelectScreen: FunctionComponent = () => {
       return;
     }
 
-    await updateFile({
-      file: {
+    await setFile(
+      {
         name: pickerResult.name,
         size: pickerResult.size ?? -1,
         uri: pickerResult.fileCopyUri,
       },
-      keys: [],
-    });
-  }, [updateFile]);
+      [],
+    );
+  }, [setFile]);
 
   const styles = useMemo(
     () =>

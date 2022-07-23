@@ -7,10 +7,10 @@ import {useActiveFile} from './ActiveFileProvider';
 import {useLockState} from './LockStateProvider';
 
 const Router: FunctionComponent = () => {
-  const {file} = useActiveFile();
+  const {activeFile} = useActiveFile();
   const {isUnlocked} = useLockState();
 
-  if (!file) {
+  if (!activeFile) {
     return <FileSelectScreen />;
   }
 
