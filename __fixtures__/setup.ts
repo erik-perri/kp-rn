@@ -1,3 +1,7 @@
+import failOnConsole from 'jest-fail-on-console';
+
+failOnConsole();
+
 jest.mock('../src/lib/utilities/KpHelperModule', () =>
   require('./KpHelperModuleMock'),
 );
