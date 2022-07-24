@@ -1,42 +1,43 @@
-import React, {FunctionComponent, PropsWithChildren, useMemo} from 'react';
+import React, {FunctionComponent} from 'react';
 import {
-  StyleSheet,
+  Omit,
   Text as RnText,
   TextProps as RnTextProps,
   TextStyle,
 } from 'react-native';
 
-interface TextProps extends RnTextProps, PropsWithChildren {
-  fontFamily?: TextStyle['fontFamily'];
-  fontSize?: TextStyle['fontSize'];
-  fontWeight?: TextStyle['fontWeight'];
-  textAlign?: TextStyle['textAlign'];
+import {useStyleProps} from '../hooks/useStyleProps';
+
+type TextStyleProps = Omit<TextStyle, 'testID'>;
+
+interface TextProps extends RnTextProps, TextStyleProps {
+  //
 }
 
-const Text: FunctionComponent<TextProps> = ({
-  children,
-  fontFamily,
-  fontSize,
-  fontWeight,
-  style,
-  textAlign,
-  ...props
-}) => {
-  const stylesFromProps = useMemo(
-    () =>
-      StyleSheet.create({
-        view: {
-          fontFamily,
-          fontSize,
-          fontWeight,
-          textAlign,
-        },
-      }),
-    [fontFamily, fontSize, fontWeight, textAlign],
-  );
+const Text: FunctionComponent<TextProps> = ({children, style, ...props}) => {
+  const {propsWithoutStyle, styleFromProps} = useStyleProps<
+    TextProps,
+    TextStyleProps
+  >(props, [
+    'color',
+    'fontFamily',
+    'fontSize',
+    'fontStyle',
+    'fontWeight',
+    'letterSpacing',
+    'lineHeight',
+    'textAlign',
+    'textDecorationLine',
+    'textDecorationStyle',
+    'textDecorationColor',
+    'textShadowColor',
+    'textShadowOffset',
+    'textShadowRadius',
+    'textTransform',
+  ]);
 
   return (
-    <RnText style={[stylesFromProps.view, style]} {...props}>
+    <RnText style={[styleFromProps, style]} {...propsWithoutStyle}>
       {children}
     </RnText>
   );
