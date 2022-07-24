@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
   createContext,
   FunctionComponent,
@@ -7,7 +8,6 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {AsyncStorage, LogBox} from 'react-native';
 
 export enum KeyType {
   Password,
@@ -73,8 +73,6 @@ const ActiveFileContext = createContext<ActiveFileState>({
   removeKey: () => Promise.resolve(),
   setFile: () => Promise.resolve(),
 });
-
-LogBox.ignoreLogs([/AsyncStorage has been extracted/]);
 
 const ActiveFileProvider: FunctionComponent<PropsWithChildren> = ({
   children,

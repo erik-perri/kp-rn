@@ -12,6 +12,7 @@
     "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.17.7",
     "@react-navigation/native": "^6.0.11",
     "@react-navigation/native-stack": "^6.7.0",
     "base64-js": "^1.5.1",
