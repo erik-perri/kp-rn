@@ -11,8 +11,8 @@ import {
 import DocumentPicker from 'react-native-document-picker';
 
 import {
-  isKeyFileSetting,
-  isKeyYubikeySetting,
+  isFileKeySetting,
+  isHardwareKeySetting,
   KeyType,
   useActiveFile,
 } from '../components/ActiveFileProvider';
@@ -149,12 +149,12 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
   }, [activeFile, navigation, password, unlockDatabase]);
 
   const fileKeySetting = useMemo(
-    () => activeFile?.keys.find(isKeyFileSetting)?.data,
+    () => activeFile?.keys.find(isFileKeySetting)?.data,
     [activeFile],
   );
 
-  const yubikeyKeySetting = useMemo(
-    () => activeFile?.keys.find(isKeyYubikeySetting)?.data,
+  const hardwareKeySetting = useMemo(
+    () => activeFile?.keys.find(isHardwareKeySetting)?.data,
     [activeFile],
   );
 
@@ -215,7 +215,7 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
             <Box marginTop={8}>
               <Box flexDirection="row">
                 <Switch
-                  value={yubikeyKeySetting === undefined}
+                  value={hardwareKeySetting === undefined}
                   onChange={onChooseNoHardwareKey}
                 />
                 <Pressable onPress={onChooseNoHardwareKey}>
@@ -225,7 +225,7 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
               {Object.entries(hardwareKeys).map(([id, name]) => (
                 <Box flexDirection="row" key={id}>
                   <Switch
-                    value={yubikeyKeySetting?.id === id}
+                    value={hardwareKeySetting?.id === id}
                     onChange={() => onChooseHardwareKey(id, name)}
                   />
                   <Pressable onPress={() => onChooseHardwareKey(id, name)}>
@@ -250,10 +250,10 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
             <ActivityIndicator />
           </Box>
           <Text fontSize={24}>Unlocking</Text>
-          {yubikeyKeySetting === undefined ? undefined : (
+          {hardwareKeySetting === undefined ? undefined : (
             <Box marginTop={20}>
               <Text fontSize={16} textAlign="center">
-                If your YubiKey has touch enabled,{'\n'}
+                If your hardware key has touch enabled,{'\n'}
                 do so now.
               </Text>
             </Box>

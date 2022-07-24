@@ -21,16 +21,16 @@ export interface LoadedFile {
   uri: string;
 }
 
-export interface KeyPasswordSetting {
+export interface PasswordKeySetting {
   type: KeyType.Password;
 }
 
-export interface KeyFileSetting {
+export interface FileKeySetting {
   type: KeyType.File;
   data: LoadedFile;
 }
 
-export interface KeyYubikeySetting {
+export interface HardwareKeySetting {
   type: KeyType.ChallengeResponse;
   data: {
     id: string;
@@ -39,15 +39,17 @@ export interface KeyYubikeySetting {
 }
 
 export type KeySetting =
-  | KeyPasswordSetting
-  | KeyFileSetting
-  | KeyYubikeySetting;
+  | PasswordKeySetting
+  | FileKeySetting
+  | HardwareKeySetting;
 
-export function isKeyFileSetting(key: KeySetting): key is KeyFileSetting {
+export function isFileKeySetting(key: KeySetting): key is FileKeySetting {
   return key.type === KeyType.File;
 }
 
-export function isKeyYubikeySetting(key: KeySetting): key is KeyYubikeySetting {
+export function isHardwareKeySetting(
+  key: KeySetting,
+): key is HardwareKeySetting {
   return key.type === KeyType.ChallengeResponse;
 }
 
