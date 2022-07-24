@@ -6,6 +6,10 @@ jest.mock('../src/lib/utilities/KpHelperModule', () =>
   require('./KpHelperModuleMock'),
 );
 
+// Fixes: `Animated: `useNativeDriver` is not supported because the native
+// animated module is missing.`
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+
 expect.extend({
   toEqualUint8Array(received: Uint8Array, expected: Uint8Array) {
     const message = () =>
