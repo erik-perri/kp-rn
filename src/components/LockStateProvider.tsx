@@ -28,6 +28,7 @@ const LockStateProvider: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
   const [database, setDatabase] = useState<Database>();
+
   const isUnlocked = useMemo<boolean>(
     () => Boolean(database?.rootGroup),
     [database],

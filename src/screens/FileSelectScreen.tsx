@@ -1,10 +1,16 @@
-import React, {FunctionComponent, useCallback, useMemo} from 'react';
-import {Alert, Button, StyleSheet, Text, View} from 'react-native';
+import React, {FunctionComponent, useCallback} from 'react';
+import {Alert, Button} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
 import {useActiveFile} from '../components/ActiveFileProvider';
+import Box from '../components/Box';
+import ScrollViewFill from '../components/ScrollViewFill';
+import Text from '../components/Text';
+import {MainStackScreenProps} from '../navigation/MainStack';
 
-const FileSelectScreen: FunctionComponent = () => {
+const FileSelectScreen: FunctionComponent<
+  MainStackScreenProps<'FileSelect'>
+> = ({navigation}) => {
   const {setFile} = useActiveFile();
 
   const onSelectFile = useCallback(async () => {
@@ -24,23 +30,20 @@ const FileSelectScreen: FunctionComponent = () => {
       },
       [],
     );
-  }, [setFile]);
 
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        root: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-        heading: {fontSize: 24, marginBottom: 16},
-      }),
-    [],
-  );
+    navigation.navigate('Unlock');
+  }, [navigation, setFile]);
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.heading}>Choose a file</Text>
+    <ScrollViewFill>
+      <Box flex={1} alignItems="center" justifyContent="center">
+        <Text fontSize={24}>Choose a file</Text>
 
-      <Button title="Browse" onPress={onSelectFile} />
-    </View>
+        <Box marginTop={20}>
+          <Button title="Browse" onPress={onSelectFile} />
+        </Box>
+      </Box>
+    </ScrollViewFill>
   );
 };
 

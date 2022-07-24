@@ -69,9 +69,11 @@ public class MainActivity extends ReactActivity {
         }
 
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // Don't pass down savedInstanceState to allow `react-native-screens` to work as expected.
+        super.onCreate(null);
 
         yubiKitManager = new YubiKitManager(getApplicationContext());
         yubiKitManager.startUsbDiscovery(new UsbConfiguration(), device -> {

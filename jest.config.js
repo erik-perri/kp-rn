@@ -5,4 +5,7 @@ module.exports = {
     '@testing-library/jest-native/extend-expect',
     '<rootDir>/__fixtures__/setup.ts',
   ],
+  transformIgnorePatterns: [
+    'node_modules/(?!@react-navigation|@react-native|react-native)',
+  ],
 };

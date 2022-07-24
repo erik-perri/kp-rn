@@ -12,12 +12,16 @@
     "check-code": "yarn test && yarn lint && yarn check-types"
   },
   "dependencies": {
+    "@react-navigation/native": "^6.0.11",
+    "@react-navigation/native-stack": "^6.7.0",
     "base64-js": "^1.5.1",
     "big-integer": "^1.6.51",
     "pako": "^2.0.4",
     "react": "18.0.0",
     "react-native": "0.69.1",
-    "react-native-document-picker": "^8.1.1"
+    "react-native-document-picker": "^8.1.1",
+    "react-native-safe-area-context": "^4.3.1",
+    "react-native-screens": "^3.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
