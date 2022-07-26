@@ -274,9 +274,9 @@ dependencies {
     implementation "org.signal:argon2:13.1@aar"
 
     // Yubikey Support
-    implementation "com.yubico.yubikit:android:2.0.0"
-    implementation 'com.yubico.yubikit:management:2.0.0'
-    implementation "com.yubico.yubikit:yubiotp:2.0.0"
+    implementation "com.yubico.yubikit:android:2.1.0"
+    implementation "com.yubico.yubikit:management:2.1.0"
+    implementation "com.yubico.yubikit:yubiotp:2.1.0"
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
