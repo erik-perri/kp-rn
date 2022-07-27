@@ -102,7 +102,8 @@ public class MainActivity extends ReactActivity {
                                         device,
                                         String.format(Locale.ENGLISH, "%d-%d", serialNumber, 1),
                                         serialNumber,
-                                        Slot.ONE
+                                        Slot.ONE,
+                                        checkRequiresTouch(otp, Slot.ONE)
                                 ));
                             }
 
@@ -111,7 +112,8 @@ public class MainActivity extends ReactActivity {
                                         device,
                                         String.format(Locale.ENGLISH, "%d-%d", serialNumber, 2),
                                         serialNumber,
-                                        Slot.TWO
+                                        Slot.TWO,
+                                        checkRequiresTouch(otp, Slot.TWO)
                                 ));
                             }
 
@@ -139,6 +141,15 @@ public class MainActivity extends ReactActivity {
                 }
             });
         });
+    }
+
+    private boolean checkRequiresTouch(YubiOtpSession session, Slot slot) {
+        try {
+            session.calculateHmacSha1(slot, new byte[]{0x00}, null, false);
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     @Override
@@ -199,12 +210,20 @@ public class MainActivity extends ReactActivity {
         public final int serialNumber;
         public final Slot slot;
         public final String id;
+        public final boolean requiresTouch;
 
-        public DeviceOption(UsbYubiKeyDevice device, String id, int serialNumber, Slot slot) {
+        public DeviceOption(
+                UsbYubiKeyDevice device,
+                String id,
+                int serialNumber,
+                Slot slot,
+                boolean requiresTouch
+        ) {
             this.device = device;
             this.serialNumber = serialNumber;
             this.slot = slot;
             this.id = id;
+            this.requiresTouch = requiresTouch;
         }
     }
 }

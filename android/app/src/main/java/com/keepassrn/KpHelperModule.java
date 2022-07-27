@@ -251,9 +251,10 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             for (MainActivity.DeviceOption option : devices) {
                 deviceOptions.putString(option.id, String.format(
                         Locale.ENGLISH,
-                        "YubiKey [%d] Slot %d",
+                        "YubiKey [%d] Slot %d - %s",
                         option.serialNumber,
-                        option.slot == Slot.ONE ? 1 : 2
+                        option.slot == Slot.ONE ? 1 : 2,
+                        option.requiresTouch ? "Touch" : "Passive"
                 ));
             }
 
