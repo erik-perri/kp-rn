@@ -274,9 +274,7 @@ dependencies {
     implementation "org.signal:argon2:13.1@aar"
 
     // Yubikey Support
-    implementation "com.yubico.yubikit:android:2.1.0"
-    implementation "com.yubico.yubikit:management:2.1.0"
-    implementation "com.yubico.yubikit:yubiotp:2.1.0"
+    implementation 'com.github.erik-perri:yubikit-android:may-block-SNAPSHOT'
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
