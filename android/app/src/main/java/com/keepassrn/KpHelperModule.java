@@ -244,11 +244,14 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             MainActivity mainActivity = (MainActivity) getCurrentActivity();
             assert mainActivity != null;
 
-            Collection<MainActivity.DeviceOption> devices = mainActivity.getAvailableDevices();
+            HardwareKeyManager keyManager = mainActivity.getHardwareKeyManager();
+            assert keyManager != null;
+
+            Collection<HardwareKeyOption> devices = keyManager.getAvailableDevices();
 
             WritableMap deviceOptions = new WritableNativeMap();
 
-            for (MainActivity.DeviceOption option : devices) {
+            for (HardwareKeyOption option : devices) {
                 deviceOptions.putString(option.id, String.format(
                         Locale.ENGLISH,
                         "YubiKey [%d] Slot %d - %s",
@@ -274,7 +277,10 @@ public class KpHelperModule extends ReactContextBaseJavaModule {
             MainActivity mainActivity = (MainActivity) getCurrentActivity();
             assert mainActivity != null;
 
-            MainActivity.DeviceOption device = mainActivity.findDevice(id);
+            HardwareKeyManager keyManager = mainActivity.getHardwareKeyManager();
+            assert keyManager != null;
+
+            HardwareKeyOption device = keyManager.findDevice(id);
 
             byte[] challenge = getBytesFromArray(data);
 
