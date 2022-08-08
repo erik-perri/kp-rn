@@ -19,6 +19,8 @@ public class KpAutofillService extends AutofillService {
     @Override
     public void onFillRequest(@NonNull FillRequest fillRequest, @NonNull CancellationSignal cancellationSignal, @NonNull FillCallback fillCallback) {
         Log.d(TAG, "onFillRequest");
+
+        FindEntriesService.execute(getApplicationContext(), "test");
     }
 
     @Override
