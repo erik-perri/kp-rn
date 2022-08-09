@@ -7,6 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 
+import extractFromObject from '../lib/utilities/extractFromObject';
 import {
   BorderRadiusProps,
   ColorProps,
@@ -32,32 +33,6 @@ const ThemeContext = createContext<ThemeState>({
   theme: {} as unknown as Theme,
 });
 
-function extractFromObject(
-  object: Record<string, unknown>,
-  path: string,
-): unknown | undefined {
-  if (object[path]) {
-    return object[path];
-  }
-
-  const firstDot = path.indexOf('.');
-  if (firstDot === -1) {
-    console.warn('Unexpected prop path', path);
-    return undefined;
-  }
-
-  const branch = path.substring(0, firstDot);
-  if (!object[branch] || typeof object[branch] !== 'object') {
-    console.warn('Unexpected prop path', path, branch);
-    return undefined;
-  }
-
-  return extractFromObject(
-    object[branch] as Record<string, unknown>,
-    path.substring(firstDot + 1),
-  );
-}
-
 const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
   children,
   theme,
@@ -79,18 +54,24 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
         let updatedCurrentProp = false;
 
         for (const [propNames, themeObject] of propsMap) {
-          if (Array.prototype.includes.call(propNames, prop)) {
-            if (typeof value !== 'string' && typeof value !== 'number') {
-              console.warn('Unexpected prop type', prop, '=', value);
-            } else {
-              updatedProps[prop] = extractFromObject(themeObject, `${value}`);
-            }
-
-            // We mark the prop as updated regardless of whether we successfully
-            // updated under the assumption that if we were provided an
-            // unexpected value type we should not pass it on.
-            updatedCurrentProp = true;
+          if (!Array.prototype.includes.call(propNames, prop)) {
+            continue;
           }
+
+          if (typeof value !== 'string' && typeof value !== 'number') {
+            console.warn('Unexpected prop type', prop, '=', value);
+          } else {
+            try {
+              updatedProps[prop] = extractFromObject(themeObject, `${value}`);
+            } catch (e) {
+              console.warn('Unexpected prop path', e);
+            }
+          }
+
+          // We mark the prop as updated regardless of whether we successfully
+          // updated under the assumption that if we were provided an
+          // unexpected value type we should not pass it on.
+          updatedCurrentProp = true;
         }
 
         if (!updatedCurrentProp) {
