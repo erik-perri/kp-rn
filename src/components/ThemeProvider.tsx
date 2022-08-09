@@ -4,6 +4,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useContext,
+  useMemo,
 } from 'react';
 
 import {
@@ -61,40 +62,45 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
   children,
   theme,
 }) => {
+  const propsMap = useMemo<[unknown, Record<string, unknown>][]>(
+    () => [
+      [ColorProps, theme.colors],
+      [SpacingProps, theme.spacing],
+      [BorderRadiusProps, theme.borderRadius],
+    ],
+    [theme],
+  );
+
   const processStyleProps = useCallback(
     (props: Record<string, unknown>): Record<string, unknown> => {
       const updatedProps: Record<string, unknown> = {};
 
       for (const [prop, value] of Object.entries(props)) {
-        if (Array.prototype.includes.call(ColorProps, prop)) {
-          if (typeof value !== 'string' && typeof value !== 'number') {
-            console.warn('Unexpected prop type', prop, '=', value);
-          } else {
-            updatedProps[prop] = extractFromObject(theme.colors, `${value}`);
+        let updatedCurrentProp = false;
+
+        for (const [propNames, themeObject] of propsMap) {
+          if (Array.prototype.includes.call(propNames, prop)) {
+            if (typeof value !== 'string' && typeof value !== 'number') {
+              console.warn('Unexpected prop type', prop, '=', value);
+            } else {
+              updatedProps[prop] = extractFromObject(themeObject, `${value}`);
+            }
+
+            // We mark the prop as updated regardless of whether we successfully
+            // updated under the assumption that if we were provided an
+            // unexpected value type we should not pass it on.
+            updatedCurrentProp = true;
           }
-        } else if (Array.prototype.includes.call(SpacingProps, prop)) {
-          if (typeof value !== 'string' && typeof value !== 'number') {
-            console.warn('Unexpected prop type', prop, '=', value);
-          } else {
-            updatedProps[prop] = extractFromObject(theme.spacing, `${value}`);
-          }
-        } else if (Array.prototype.includes.call(BorderRadiusProps, prop)) {
-          if (typeof value !== 'string' && typeof value !== 'number') {
-            console.warn('Unexpected prop type', prop, '=', value);
-          } else {
-            updatedProps[prop] = extractFromObject(
-              theme.borderRadius,
-              `${value}`,
-            );
-          }
-        } else {
+        }
+
+        if (!updatedCurrentProp) {
           updatedProps[prop] = value;
         }
       }
 
       return updatedProps;
     },
-    [theme],
+    [propsMap],
   );
 
   return (
