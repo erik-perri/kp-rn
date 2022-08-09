@@ -1,11 +1,12 @@
-import React, {FunctionComponent, PropsWithChildren} from 'react';
+import React, {FunctionComponent} from 'react';
 import {View, ViewProps, ViewStyle} from 'react-native';
 
 import {useStyleProps} from '../hooks/useStyleProps';
+import {ToThemeStyle} from '../theme/types';
 
-type BoxStyleProps = Omit<ViewStyle, 'testID'>;
+type BoxStyleProps = ToThemeStyle<Omit<ViewStyle, 'testID'>>;
 
-interface BoxProps extends ViewProps, PropsWithChildren, BoxStyleProps {
+interface BoxProps extends ViewProps, BoxStyleProps {
   //
 }
 

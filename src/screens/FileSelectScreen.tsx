@@ -39,7 +39,7 @@ const FileSelectScreen: FunctionComponent<
       <Box flex={1} alignItems="center" justifyContent="center">
         <Text fontSize={24}>Choose a file</Text>
 
-        <Box marginTop={20}>
+        <Box marginTop={5}>
           <Button title="Browse" onPress={onSelectFile} />
         </Box>
       </Box>

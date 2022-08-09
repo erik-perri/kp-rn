@@ -16,9 +16,9 @@ const IndexScreen: FunctionComponent = () => {
   );
 
   return (
-    <Box flex={1} padding={20}>
+    <Box flex={1} padding={5}>
       <Text fontSize={24}>{database?.metadata.name}</Text>
-      <Box marginTop={20} marginBottom={20}>
+      <Box marginTop={5} marginBottom={5}>
         <Button title="Lock" onPress={lockDatabase} />
       </Box>
       <ScrollView>

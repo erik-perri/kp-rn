@@ -1,4 +1,3 @@
-import {DarkTheme, DefaultTheme} from '@react-navigation/native';
 import React, {FunctionComponent} from 'react';
 import {ActivityIndicator} from 'react-native';
 
@@ -9,10 +8,7 @@ import useLightDark from '../hooks/useLightDark';
 const SplashScreen: FunctionComponent = () => {
   // This is rendered outside a stack, so it does not include the navigation
   // background.
-  const backgroundColor = useLightDark(
-    DefaultTheme.colors.background,
-    DarkTheme.colors.background,
-  );
+  const backgroundColor = useLightDark('slate.50', 'black');
 
   return (
     <Box
@@ -20,7 +16,7 @@ const SplashScreen: FunctionComponent = () => {
       alignItems="center"
       justifyContent="center"
       backgroundColor={backgroundColor}>
-      <Box marginBottom={20}>
+      <Box marginBottom={5}>
         <ActivityIndicator />
       </Box>
       <Text fontSize={24}>Loading</Text>

@@ -41,7 +41,7 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
   const [unlocking, setUnlocking] = useState(false);
   const hardwareKeys = useHardwareKeyList();
 
-  const borderColor = useLightDark('#ccc', '#444');
+  const borderColor = useLightDark('slate.300', 'slate.800');
 
   const onChooseDifferentFile = useCallback(async () => {
     if (navigation.canGoBack()) {
@@ -164,11 +164,11 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
 
   return (
     <ScrollViewFill>
-      <Box flex={1} justifyContent="space-between" padding={20}>
-        <Box marginBottom={10}>
+      <Box flex={1} justifyContent="space-between" padding={5}>
+        <Box marginBottom={2}>
           <Text fontSize={24}>Unlock {activeFile.file.name}</Text>
 
-          <Box marginTop={20}>
+          <Box marginTop={5}>
             <Button
               title="Choose different file"
               onPress={onChooseDifferentFile}
@@ -176,14 +176,14 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
           </Box>
         </Box>
 
-        <Box marginTop={20} marginBottom={20}>
+        <Box marginTop={5} marginBottom={5}>
           <Box
             borderColor={borderColor}
             borderWidth={1}
-            marginBottom={20}
-            padding={12}>
+            marginBottom={5}
+            padding={3}>
             <Text>Password</Text>
-            <Box borderWidth={1} borderColor={borderColor} marginTop={8}>
+            <Box borderWidth={1} borderColor={borderColor} marginTop={2}>
               <TextInput
                 secureTextEntry
                 onChangeText={value => setPassword(value)}
@@ -195,10 +195,10 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
           <Box
             borderColor={borderColor}
             borderWidth={1}
-            marginBottom={20}
-            padding={12}>
+            marginBottom={5}
+            padding={3}>
             <Text>Key file</Text>
-            <Box marginTop={8} flexDirection="row">
+            <Box marginTop={2} flexDirection="row">
               <Box flex={1} justifyContent="center">
                 <Text>{fileKeySetting ? fileKeySetting.name : 'None'}</Text>
               </Box>
@@ -210,9 +210,9 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
             </Box>
           </Box>
 
-          <Box borderColor={borderColor} borderWidth={1} padding={12}>
+          <Box borderColor={borderColor} borderWidth={1} padding={3}>
             <Text>Hardware key</Text>
-            <Box marginTop={8}>
+            <Box marginTop={2}>
               <Box flexDirection="row">
                 <Switch
                   value={hardwareKeySetting === undefined}
@@ -243,15 +243,15 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
       <Modal transparent visible={unlocking}>
         <Box
           flex={1}
-          backgroundColor="rgba(0, 0, 0, 0.5)"
+          backgroundColor="slate.50"
           justifyContent="center"
           alignItems="center">
-          <Box marginBottom={20}>
+          <Box marginBottom={5}>
             <ActivityIndicator />
           </Box>
           <Text fontSize={24}>Unlocking</Text>
           {hardwareKeySetting === undefined ? undefined : (
-            <Box marginTop={20}>
+            <Box marginTop={5}>
               <Text fontSize={16} textAlign="center">
                 If your hardware key has touch enabled,{'\n'}
                 do so now.

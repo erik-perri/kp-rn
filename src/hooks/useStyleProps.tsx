@@ -1,6 +1,8 @@
 import {useMemo} from 'react';
 import {StyleSheet} from 'react-native';
 
+import {useTheme} from '../components/ThemeProvider';
+
 function objectEntries<ObjectType>(
   obj: ObjectType,
 ): [keyof ObjectType, ObjectType[keyof ObjectType]][] {
@@ -11,9 +13,11 @@ function objectEntries<ObjectType>(
 }
 
 export function useStyleProps<
-  AvailableProps,
+  AvailableProps extends {},
   AvailableStyleProps extends AvailableProps,
 >(props: AvailableProps, supportedStyles: Array<keyof AvailableStyleProps>) {
+  const {processStyleProps} = useTheme();
+
   const styleFromProps = useMemo(() => {
     const foundStyles: Partial<AvailableProps> = {};
 
@@ -24,9 +28,9 @@ export function useStyleProps<
     });
 
     return StyleSheet.create({
-      root: foundStyles,
+      root: processStyleProps(foundStyles),
     }).root;
-  }, [props, supportedStyles]);
+  }, [processStyleProps, props, supportedStyles]);
 
   const propsWithoutStyle = useMemo(() => {
     const withoutStyle: AvailableProps = {...props};
@@ -37,8 +41,8 @@ export function useStyleProps<
       }
     });
 
-    return withoutStyle;
-  }, [props, supportedStyles]);
+    return processStyleProps(withoutStyle);
+  }, [processStyleProps, props, supportedStyles]);
 
   return {propsWithoutStyle, styleFromProps};
 }

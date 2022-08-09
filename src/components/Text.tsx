@@ -7,8 +7,9 @@ import {
 } from 'react-native';
 
 import {useStyleProps} from '../hooks/useStyleProps';
+import {ToThemeStyle} from '../theme/types';
 
-type TextStyleProps = Omit<TextStyle, 'testID'>;
+type TextStyleProps = ToThemeStyle<Omit<TextStyle, 'testID'>>;
 
 interface TextProps extends RnTextProps, TextStyleProps {
   //
