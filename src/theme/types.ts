@@ -2,10 +2,10 @@ import theme from './theme';
 
 export type Theme = typeof theme;
 
-type ExtractColors<ColorObject> = keyof {
-  [Name in keyof ColorObject as ColorObject[Name] extends string | number
+type ExtractColors<Colors> = keyof {
+  [Name in keyof Colors as Colors[Name] extends string | number
     ? `${(string | number) & Name}`
-    : `${string & Name}.${string & ExtractColors<ColorObject[Name]>}`]: string;
+    : `${(string | number) & Name}.${string & ExtractColors<Colors[Name]>}`]: 1;
 };
 
 export type ThemeColor = ExtractColors<Theme['colors']>;
