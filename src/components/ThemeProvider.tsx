@@ -18,7 +18,7 @@ import {
 } from '../theme/types';
 
 interface ThemeState {
-  processStyleProps: (
+  processThemeProps: (
     props: Record<string, unknown>,
   ) => Record<string, unknown>;
   theme: Theme;
@@ -29,7 +29,7 @@ interface ThemeProviderProps extends PropsWithChildren {
 }
 
 const ThemeContext = createContext<ThemeState>({
-  processStyleProps: () => {
+  processThemeProps: () => {
     throw new Error('Not implemented');
   },
   theme: {} as unknown as Theme,
@@ -124,7 +124,7 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
     [],
   );
 
-  const processStyleProps = useCallback(
+  const processThemeProps = useCallback(
     (props: Record<string, unknown>): Record<string, unknown> => {
       let updatedProps = processColorProps(props);
 
@@ -154,7 +154,7 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
   return (
     <ThemeContext.Provider
       value={{
-        processStyleProps,
+        processThemeProps,
         theme,
       }}>
       {children}

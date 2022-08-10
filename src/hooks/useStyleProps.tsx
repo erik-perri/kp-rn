@@ -16,7 +16,7 @@ export function useStyleProps<
   AvailableProps extends {},
   AvailableStyleProps extends AvailableProps,
 >(props: AvailableProps, supportedStyles: Array<keyof AvailableStyleProps>) {
-  const {processStyleProps} = useTheme();
+  const {processThemeProps} = useTheme();
 
   const styleFromProps = useMemo(() => {
     const foundStyles: Partial<AvailableProps> = {};
@@ -28,9 +28,9 @@ export function useStyleProps<
     });
 
     return StyleSheet.create({
-      root: processStyleProps(foundStyles),
+      root: processThemeProps(foundStyles),
     }).root;
-  }, [processStyleProps, props, supportedStyles]);
+  }, [processThemeProps, props, supportedStyles]);
 
   const propsWithoutStyle = useMemo(() => {
     const withoutStyle: AvailableProps = {...props};
@@ -41,8 +41,8 @@ export function useStyleProps<
       }
     });
 
-    return processStyleProps(withoutStyle);
-  }, [processStyleProps, props, supportedStyles]);
+    return processThemeProps(withoutStyle);
+  }, [processThemeProps, props, supportedStyles]);
 
   return {propsWithoutStyle, styleFromProps};
 }
