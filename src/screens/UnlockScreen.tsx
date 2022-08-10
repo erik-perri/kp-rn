@@ -243,7 +243,7 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
       <Modal transparent visible={unlocking}>
         <Box
           flex={1}
-          backgroundColor="slate.50"
+          backgroundColor={['black', 50]}
           justifyContent="center"
           alignItems="center">
           <Box marginBottom={5}>

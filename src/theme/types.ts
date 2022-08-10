@@ -11,6 +11,7 @@ type ExtractColors<Colors> = keyof {
 export type ThemeColor = ExtractColors<Theme['colors']>;
 export type ThemeSpacing = keyof Theme['spacing'];
 export type ThemeBorderRadius = keyof Theme['borderRadius'];
+export type ThemeOpacity = keyof Theme['opacity'];
 
 const ViewColorProps = [
   'backgroundColor',
@@ -72,12 +73,18 @@ const ViewBorderRadiusProps = [
 
 export const BorderRadiusProps = [...ViewBorderRadiusProps] as const;
 
+const ViewOpacityProps = ['opacity'] as const;
+
+export const OpacityProps = [...ViewOpacityProps] as const;
+
 export type ToThemeStyle<StyleProps> = {
   [Prop in keyof StyleProps]: Prop extends typeof ColorProps[number]
-    ? ThemeColor
+    ? ThemeColor | [ThemeColor, ThemeOpacity]
     : Prop extends typeof SpacingProps[number]
     ? ThemeSpacing
     : Prop extends typeof BorderRadiusProps[number]
     ? ThemeBorderRadius
+    : Prop extends typeof OpacityProps[number]
+    ? ThemeOpacity
     : StyleProps[Prop];
 };

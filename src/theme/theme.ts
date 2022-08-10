@@ -1,8 +1,8 @@
 const theme = {
   colors: {
     transparent: 'transparent',
-    black: '#000',
-    white: '#fff',
+    black: '#000000',
+    white: '#ffffff',
     slate: {
       50: '#f8fafc',
       100: '#f1f5f9',
@@ -15,6 +15,23 @@ const theme = {
       800: '#1e293b',
       900: '#0f172a',
     },
+  },
+  opacity: {
+    0: 0,
+    5: 0.05,
+    10: 0.1,
+    20: 0.2,
+    25: 0.25,
+    30: 0.3,
+    40: 0.4,
+    50: 0.5,
+    60: 0.6,
+    70: 0.7,
+    75: 0.75,
+    80: 0.8,
+    90: 0.9,
+    95: 0.95,
+    100: 1,
   },
   spacing: {
     0: 0,
