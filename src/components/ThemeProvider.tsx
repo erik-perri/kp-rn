@@ -13,9 +13,8 @@ import {
   ColorProps,
   OpacityProps,
   SpacingProps,
-  Theme,
-  ThemeOpacity,
-} from '../theme/types';
+} from '../theme/props';
+import {Theme, ThemeOpacity} from '../theme/types';
 
 interface ThemeState {
   processThemeProps: (
