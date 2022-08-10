@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 
 import {useStyleProps} from '../hooks/useStyleProps';
+import {TextStyleProps} from '../theme/props';
 import {ToThemeStyle} from '../theme/types';
 
 type TextStyleProps = ToThemeStyle<Omit<TextStyle, 'testID'>>;
@@ -19,23 +20,7 @@ const Text: FunctionComponent<TextProps> = ({children, style, ...props}) => {
   const {propsWithoutStyle, styleFromProps} = useStyleProps<
     TextProps,
     TextStyleProps
-  >(props, [
-    'color',
-    'fontFamily',
-    'fontSize',
-    'fontStyle',
-    'fontWeight',
-    'letterSpacing',
-    'lineHeight',
-    'textAlign',
-    'textDecorationLine',
-    'textDecorationStyle',
-    'textDecorationColor',
-    'textShadowColor',
-    'textShadowOffset',
-    'textShadowRadius',
-    'textTransform',
-  ]);
+  >(props, [...TextStyleProps]);
 
   return (
     <RnText style={[styleFromProps, style]} {...propsWithoutStyle}>

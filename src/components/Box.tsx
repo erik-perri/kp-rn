@@ -2,6 +2,7 @@ import React, {FunctionComponent} from 'react';
 import {View, ViewProps, ViewStyle} from 'react-native';
 
 import {useStyleProps} from '../hooks/useStyleProps';
+import {ViewStyleProps} from '../theme/props';
 import {ToThemeStyle} from '../theme/types';
 
 type BoxStyleProps = ToThemeStyle<Omit<ViewStyle, 'testID'>>;
@@ -14,34 +15,7 @@ const Box: FunctionComponent<BoxProps> = ({children, style, ...props}) => {
   const {propsWithoutStyle, styleFromProps} = useStyleProps<
     BoxProps,
     BoxStyleProps
-  >(props, [
-    'backfaceVisibility',
-    'backgroundColor',
-    'borderBottomColor',
-    'borderBottomEndRadius',
-    'borderBottomLeftRadius',
-    'borderBottomRightRadius',
-    'borderBottomStartRadius',
-    'borderBottomWidth',
-    'borderColor',
-    'borderEndColor',
-    'borderLeftColor',
-    'borderLeftWidth',
-    'borderRadius',
-    'borderRightColor',
-    'borderRightWidth',
-    'borderStartColor',
-    'borderStyle',
-    'borderTopColor',
-    'borderTopEndRadius',
-    'borderTopLeftRadius',
-    'borderTopRightRadius',
-    'borderTopStartRadius',
-    'borderTopWidth',
-    'borderWidth',
-    'opacity',
-    'elevation',
-  ]);
+  >(props, [...ViewStyleProps]);
 
   return (
     <View style={[styleFromProps, style]} {...propsWithoutStyle}>

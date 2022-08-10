@@ -41,8 +41,8 @@ export function useStyleProps<
       }
     });
 
-    return processThemeProps(withoutStyle);
-  }, [processThemeProps, props, supportedStyles]);
+    return withoutStyle;
+  }, [props, supportedStyles]);
 
   return {propsWithoutStyle, styleFromProps};
 }
