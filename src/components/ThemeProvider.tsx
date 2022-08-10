@@ -4,9 +4,9 @@ import React, {
   PropsWithChildren,
   useCallback,
   useContext,
-  useMemo,
 } from 'react';
 
+import {addAlphaToColor} from '../lib/utilities/colors';
 import extractFromObject from '../lib/utilities/extractFromObject';
 import {
   BorderRadiusProps,
@@ -70,21 +70,25 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
         }
 
         if (typeof value !== 'string' && typeof value !== 'number') {
-          console.warn('Unexpected prop type', prop, '=', value);
+          console.warn(`Unexpected type for ${prop}: "${value}"`);
         } else {
           try {
             updatedProps[prop] = extractFromObject(theme.colors, `${value}`);
           } catch (e) {
-            console.warn('Unexpected prop path', e);
+            console.warn(`Unexpected path for prop ${prop}`, e);
           }
         }
 
-        if (opacity !== undefined && updatedProps[prop] !== undefined) {
-          // TODO Parse color instead of assuming 6 digit hex?
-          const opacityValue = Math.round(
-            theme.opacity[opacity] * 255,
-          ).toString(16);
-          updatedProps[prop] = `${updatedProps[prop]}${opacityValue}`;
+        if (opacity !== undefined) {
+          const propValue = updatedProps[prop];
+          if (typeof propValue === 'string') {
+            updatedProps[prop] = addAlphaToColor(
+              propValue,
+              theme.opacity[opacity],
+            );
+          } else {
+            console.warn(`Cannot apply opacity to ${prop}`);
+          }
         }
       }
 
