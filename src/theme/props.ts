@@ -64,6 +64,16 @@ export const BorderRadiusProps = [...ViewBorderRadiusProps] as const;
 
 const ViewOpacityProps = ['opacity'] as const;
 
+const ViewBorderWidthProps = [
+  'borderBottomWidth',
+  'borderLeftWidth',
+  'borderRightWidth',
+  'borderTopWidth',
+  'borderWidth',
+] as const;
+
+export const BorderWidthProps = [...ViewBorderWidthProps] as const;
+
 export const OpacityProps = [...ViewOpacityProps] as const;
 
 export const FlexStyleProps = [

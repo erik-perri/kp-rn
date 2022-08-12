@@ -4,6 +4,7 @@ import {
   ExtractColors,
   Theme,
   ThemeBorderRadius,
+  ThemeBorderWidth,
   ThemeColor,
   ThemeFontSize,
   ThemeLineHeight,
@@ -37,6 +38,13 @@ export function useBorderRadius<
   Return extends [] extends Value ? number[] : number,
 >(value: Value): Return {
   return useToken('borderRadius', value);
+}
+
+export function useBorderWidth<
+  Value extends ThemeBorderWidth | ThemeBorderWidth[],
+  Return extends [] extends Value ? number[] : number,
+>(value: Value): Return {
+  return useToken('borderWidth', value);
 }
 
 export function useColor<

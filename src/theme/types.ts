@@ -1,5 +1,6 @@
 import {
   BorderRadiusProps,
+  BorderWidthProps,
   ColorProps,
   FontSizeProps,
   LineHeightProps,
@@ -21,6 +22,7 @@ export type ThemeFontSize = keyof Theme['fontSize'];
 export type ThemeLineHeight = keyof Theme['lineHeight'];
 export type ThemeSpacing = keyof Theme['spacing'];
 export type ThemeBorderRadius = keyof Theme['borderRadius'];
+export type ThemeBorderWidth = keyof Theme['borderWidth'];
 export type ThemeOpacity = keyof Theme['opacity'];
 
 export type ToThemeStyle<StyleProps> = {
@@ -34,6 +36,8 @@ export type ToThemeStyle<StyleProps> = {
     ? ThemeSpacing
     : Prop extends typeof BorderRadiusProps[number]
     ? ThemeBorderRadius
+    : Prop extends typeof BorderWidthProps[number]
+    ? ThemeBorderWidth
     : Prop extends typeof OpacityProps[number]
     ? ThemeOpacity
     : StyleProps[Prop];

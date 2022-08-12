@@ -10,6 +10,7 @@ import {addAlphaToColor} from '../lib/utilities/colors';
 import extractFromObject from '../lib/utilities/extractFromObject';
 import {
   BorderRadiusProps,
+  BorderWidthProps,
   ColorProps,
   FontSizeProps,
   LineHeightProps,
@@ -138,6 +139,7 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
         [LineHeightProps, theme.lineHeight],
         [SpacingProps, theme.spacing],
         [BorderRadiusProps, theme.borderRadius],
+        [BorderWidthProps, theme.borderWidth],
         [OpacityProps, theme.opacity],
       ]) {
         updatedProps = processProps(
@@ -153,6 +155,7 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
       processColorProps,
       processProps,
       theme.borderRadius,
+      theme.borderWidth,
       theme.fontSize,
       theme.lineHeight,
       theme.opacity,
