@@ -8,7 +8,7 @@ import theme from './theme';
 
 export type Theme = typeof theme;
 
-type ExtractColors<Colors> = keyof {
+export type ExtractColors<Colors> = keyof {
   [Name in keyof Colors as Colors[Name] extends string | number
     ? `${(string | number) & Name}`
     : `${(string | number) & Name}.${string & ExtractColors<Colors[Name]>}`]: 1;
