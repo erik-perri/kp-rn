@@ -33,51 +33,32 @@ export default function useToken<
   return result as Return;
 }
 
-export function useBorderRadius<
-  Value extends ThemeBorderRadius | ThemeBorderRadius[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useBorderRadius(
+  value: ThemeBorderRadius | ThemeBorderRadius[],
+) {
   return useToken('borderRadius', value);
 }
 
-export function useBorderWidth<
-  Value extends ThemeBorderWidth | ThemeBorderWidth[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useBorderWidth(value: ThemeBorderWidth | ThemeBorderWidth[]) {
   return useToken('borderWidth', value);
 }
 
-export function useColor<
-  Value extends ThemeColor | ThemeColor[],
-  Return extends [] extends Value ? string[] : string,
->(value: Value): Return {
+export function useColor(value: ThemeColor | ThemeColor[]) {
   return useToken('colors', value);
 }
 
-export function useFontSize<
-  Value extends ThemeFontSize | ThemeFontSize[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useFontSize(value: ThemeFontSize | ThemeFontSize[]) {
   return useToken('fontSize', value);
 }
 
-export function useLineHeight<
-  Value extends ThemeLineHeight | ThemeLineHeight[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useLineHeight(value: ThemeLineHeight | ThemeLineHeight[]) {
   return useToken('lineHeight', value);
 }
 
-export function useOpacity<
-  Value extends ThemeOpacity | ThemeOpacity[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useOpacity(value: ThemeOpacity | ThemeOpacity[]) {
   return useToken('opacity', value);
 }
 
-export function useSpacing<
-  Value extends ThemeSpacing | ThemeSpacing[],
-  Return extends [] extends Value ? number[] : number,
->(value: Value): Return {
+export function useSpacing(value: ThemeSpacing | ThemeSpacing[]) {
   return useToken('spacing', value);
 }
