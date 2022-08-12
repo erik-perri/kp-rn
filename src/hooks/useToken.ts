@@ -5,6 +5,8 @@ import {
   Theme,
   ThemeBorderRadius,
   ThemeColor,
+  ThemeFontSize,
+  ThemeLineHeight,
   ThemeOpacity,
   ThemeSpacing,
 } from '../theme/types';
@@ -42,6 +44,20 @@ export function useColor<
   Return extends [] extends Value ? string[] : string,
 >(value: Value): Return {
   return useToken('colors', value);
+}
+
+export function useFontSize<
+  Value extends ThemeFontSize | ThemeFontSize[],
+  Return extends [] extends Value ? number[] : number,
+>(value: Value): Return {
+  return useToken('fontSize', value);
+}
+
+export function useLineHeight<
+  Value extends ThemeLineHeight | ThemeLineHeight[],
+  Return extends [] extends Value ? number[] : number,
+>(value: Value): Return {
+  return useToken('lineHeight', value);
 }
 
 export function useOpacity<

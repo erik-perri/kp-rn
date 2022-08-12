@@ -37,7 +37,7 @@ const FileSelectScreen: FunctionComponent<
   return (
     <ScrollViewFill>
       <Box flex={1} alignItems="center" justifyContent="center">
-        <Text fontSize={24}>Choose a file</Text>
+        <Text fontSize="2xl">Choose a file</Text>
 
         <Box marginTop={5}>
           <Button title="Browse" onPress={onSelectFile} />

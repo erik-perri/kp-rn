@@ -17,12 +17,12 @@ const IndexScreen: FunctionComponent = () => {
 
   return (
     <Box flex={1} padding={5}>
-      <Text fontSize={24}>{database?.metadata.name}</Text>
+      <Text fontSize="2xl">{database?.metadata.name}</Text>
       <Box marginTop={5} marginBottom={5}>
         <Button title="Lock" onPress={lockDatabase} />
       </Box>
       <ScrollView>
-        <Text fontFamily="monospace" fontSize={12}>
+        <Text fontFamily="monospace" fontSize="xs">
           {JSON.stringify(
             database?.rootGroup,
             (key, value) => {

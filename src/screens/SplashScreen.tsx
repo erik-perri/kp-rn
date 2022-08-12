@@ -19,7 +19,7 @@ const SplashScreen: FunctionComponent = () => {
       <Box marginBottom={5}>
         <ActivityIndicator />
       </Box>
-      <Text fontSize={24}>Loading</Text>
+      <Text fontSize="base">Loading</Text>
     </Box>
   );
 };

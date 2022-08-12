@@ -166,7 +166,7 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
     <ScrollViewFill>
       <Box flex={1} justifyContent="space-between" padding={5}>
         <Box marginBottom={2}>
-          <Text fontSize={24}>Unlock {activeFile.file.name}</Text>
+          <Text fontSize="2xl">Unlock {activeFile.file.name}</Text>
 
           <Box marginTop={5}>
             <Button
@@ -249,10 +249,10 @@ const UnlockScreen: FunctionComponent<MainStackScreenProps<'Unlock'>> = ({
           <Box marginBottom={5}>
             <ActivityIndicator />
           </Box>
-          <Text fontSize={24}>Unlocking</Text>
+          <Text fontSize="2xl">Unlocking</Text>
           {hardwareKeySetting === undefined ? undefined : (
             <Box marginTop={5}>
-              <Text fontSize={16} textAlign="center">
+              <Text fontSize="base" textAlign="center">
                 If your hardware key has touch enabled,{'\n'}
                 do so now.
               </Text>

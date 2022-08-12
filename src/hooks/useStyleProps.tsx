@@ -12,11 +12,24 @@ function objectEntries<ObjectType>(
   ][];
 }
 
+function hasFontSizeAndNoLineHeight(props: {}): props is {
+  fontSize: unknown;
+  lineHeight: unknown | undefined;
+} {
+  return (
+    props.hasOwnProperty('fontSize') && !props.hasOwnProperty('lineHeight')
+  );
+}
+
 export function useStyleProps<
   AvailableProps extends {},
   AvailableStyleProps extends AvailableProps,
 >(props: AvailableProps, supportedStyles: Array<keyof AvailableStyleProps>) {
   const {processThemeProps} = useTheme();
+
+  if (hasFontSizeAndNoLineHeight(props)) {
+    props.lineHeight = props.fontSize;
+  }
 
   const styleFromProps = useMemo(() => {
     const foundStyles: Partial<AvailableProps> = {};

@@ -11,6 +11,8 @@ import extractFromObject from '../lib/utilities/extractFromObject';
 import {
   BorderRadiusProps,
   ColorProps,
+  FontSizeProps,
+  LineHeightProps,
   OpacityProps,
   SpacingProps,
 } from '../theme/props';
@@ -132,6 +134,8 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
       let updatedProps = processColorProps(props);
 
       for (const [supportedProps, themeValues] of [
+        [FontSizeProps, theme.fontSize],
+        [LineHeightProps, theme.lineHeight],
         [SpacingProps, theme.spacing],
         [BorderRadiusProps, theme.borderRadius],
         [OpacityProps, theme.opacity],
@@ -149,6 +153,8 @@ const ThemeProvider: FunctionComponent<ThemeProviderProps> = ({
       processColorProps,
       processProps,
       theme.borderRadius,
+      theme.fontSize,
+      theme.lineHeight,
       theme.opacity,
       theme.spacing,
     ],

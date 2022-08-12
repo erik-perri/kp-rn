@@ -17,6 +17,10 @@ const TextColorProps = [
 
 export const ColorProps = [...ViewColorProps, ...TextColorProps] as const;
 
+export const FontSizeProps = ['fontSize'] as const;
+
+export const LineHeightProps = ['lineHeight'] as const;
+
 const ViewSpacingProps = [
   'bottom',
   'left',
